@@ -1,0 +1,7 @@
+Power Shell
+# From project root
+.venv\Scripts\Activate.ps1
+OR
+
+Set-Alias activate-env ".venv\Scripts\Activate.ps1"
+activate-env

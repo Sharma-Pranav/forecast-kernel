@@ -1,0 +1,43 @@
+# Core Data Stack
+numpy
+pandas
+pyyaml
+scikit-learn
+
+# Forecasting & Time Series Models
+statsmodels
+statsforecast
+
+# ML Infrastructure
+mlflow
+pandera
+dvc[s3]
+fastapi
+uvicorn
+
+# Deep Learning + Transformers
+torch
+transformers==4.40.1
+datasets==2.18.0
+accelerate==0.28.0
+
+# Orchestration & Scheduling
+GitPython               # for git-based lineage tracking
+python-dotenv           # for env-var loading
+requests                # for API integration (optional)
+tqdm                    # for progress bars in CLI
+
+# Evaluation / Logging
+tabulate                # for neat terminal reports
+rich                    # for CLI styling and logs
+plotly                  # for optional dashboards
+matplotlib              # for quick local plots
+
+# Cloud Bridge (Phase 5)
+boto3                   # AWS SDK for S3 access
+awscli                  # Optional, if scripting S3 setup
+
+# Optional Add-ons (watch-list compatible)
+polars                  # High-speed ETL
+duckdb                  # Lightweight OLAP engine
+prefect                 # Optional orchestrator
