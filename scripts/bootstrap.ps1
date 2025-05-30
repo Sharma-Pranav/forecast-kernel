@@ -15,3 +15,6 @@ uv pip install -r requirements.txt
 python scripts/hello.py
 
 Write-Host "✅ Bootstrap complete."
+
+
+# Run it with # powershell -ExecutionPolicy Bypass -File scripts/env.ps1

@@ -1,0 +1,52 @@
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+.venv/
+env/
+venv/
+
+# Jupyter/IPython
+.ipynb_checkpoints/
+
+# Data outputs
+data/outputs/
+data/**/outputs/
+*.log
+*.csv
+*.json
+
+# OS & editor junk
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+
+# IDEs
+.vscode/
+.idea/
+
+# Git
+*.orig
+
+# Logs
+*.log
+
+# Misc
+*.bak
+*.tmp
+
+# DVC (Data Version Control)
+.dvc/
+.dvc/cache/
+.dvc/tmp/
+
+# VSCode settings
+forecast-kernel.code-workspace

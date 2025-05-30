@@ -41,3 +41,5 @@ awscli                  # Optional, if scripting S3 setup
 polars                  # High-speed ETL
 duckdb                  # Lightweight OLAP engine
 prefect                 # Optional orchestrator
+seaborn                  # For advanced plotting
+packaging               # For version management
