@@ -17,6 +17,8 @@ from core.forecastability import compute_forecastability_metrics
 from pipelines.visuals import visual_debug
 from core.phase_handler import include_dm_test, include_drift_monitor, include_serve_hash
 
+from core.drift import detect_residual_drift
+# ------------------------------
 # Ensure UTF-8 output
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
@@ -91,8 +93,10 @@ forecasts["ensemble_naive"] = (naive_forecast + seasonal_forecast) / 2
 # Evaluation + Scoring
 # ------------------------------
 forecast_cols = [col for col in forecasts.columns if col not in ["unique_id", "ds"]]
-results = evaluate_forecasts(forecasts, true_future, forecast_cols)
+results, residuals_df = evaluate_forecasts(forecasts, true_future, forecast_cols, output_path)
 log.info("\n" + tabulate(results, headers="keys", tablefmt="github"))
+
+
 
 # ------------------------------
 # Forecastability Metrics
@@ -144,16 +148,19 @@ baseline_metrics = {
 }
 
 if include_dm_test(active_phase):
-    baseline_metrics["dm_test"] = compute_dm_test(
-        forecasts, true_future, selected_model, "ensemble_naive"
-    )
+    dm_test_result = compute_dm_test(forecasts, true_future, selected_model, "ensemble_naive")
+    baseline_metrics["dm_test"] = dm_test_result
 
+# ------------------------------
+# Residual Drift Monitoring
+# ------------------------------
 if include_drift_monitor(active_phase):
+    drift_info = detect_residual_drift(residuals_df, selected_model)
     baseline_metrics["drift_monitor"] = {
         "last_trained": datetime.now().strftime("%Y-%m-%d"),
-        "drift_detected": False,
-        "fp_rate": 0.01
+        **drift_info
     }
+# ------------------------------
 
 if include_serve_hash(active_phase):
     baseline_metrics["metadata"]["serve_hash"] = "abc1234"
