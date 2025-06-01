@@ -1,16 +1,17 @@
-Power Shell
-# From project root
+# 🧪 Activate Virtual Environment
 .venv\Scripts\Activate.ps1
-OR
 
+# (Optional) Set alias for quicker reuse
 Set-Alias activate-env ".venv\Scripts\Activate.ps1"
 activate-env
 
-
-
+# 👤 Git Config (one-time setup)
 git config --global user.name "Pranav Sharma"
 git config --global user.email "pranavsharma619@gmail.com"
 
-Running scripts
-
-python scripts/baseline_sf.py --data data/raw/univariate_example.csv --horizon 14 --tag demo
+# 🚀 Run Baseline Phase 1 Script
+python scripts/baseline_sf.py `
+  --data data/raw/univariate_example.csv `
+  --horizon 14 `
+  --tag demo `
+  --phase 1
