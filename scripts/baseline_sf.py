@@ -16,8 +16,14 @@ from core.evaluation import evaluate_forecasts
 from core.forecastability import compute_forecastability_metrics
 from pipelines.visuals import visual_debug
 from core.phase_handler import include_dm_test, include_drift_monitor, include_serve_hash
+from utils.hash_utils import compute_file_hash
+from core.hash_utils import generate_serve_hash
+from core.decomposition import decompose_errors
 
 from core.drift import detect_residual_drift
+from pipelines.visuals import plot_residual_drift, plot_residual_histograms
+
+
 # ------------------------------
 # Ensure UTF-8 output
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
@@ -32,7 +38,7 @@ parser.add_argument("--output_dir", type=str, default="data/outputs/baseline", h
 parser.add_argument("--tag", type=str, default=None, help="Optional run tag")
 parser.add_argument("--window_size", type=int, default=3, help="Window size for WindowAverage and SeasWA")
 parser.add_argument("--season_length", type=int, default=12, help="Season length for seasonal models")
-parser.add_argument("--phase", type=int, default=1, help="Forecast-Kernel phase (default: 1)")
+parser.add_argument("--phase", type=int, default=3, help="Forecast-Kernel phase (default: 3)")
 args = parser.parse_args()
 
 active_phase = args.phase
@@ -51,6 +57,8 @@ log = setup_logger(log_path, logger_name="baseline")
 # Load Dataset
 # ------------------------------
 log.info(f"Loading dataset from: {args.data}")
+input_hash = compute_file_hash(args.data)
+log.info(f"Input file hash: {input_hash}")
 df = pd.read_csv(args.data)
 df["ds"] = pd.to_datetime(df["ds"])
 df = df.sort_values(["unique_id", "ds"])
@@ -97,7 +105,6 @@ results, residuals_df = evaluate_forecasts(forecasts, true_future, forecast_cols
 log.info("\n" + tabulate(results, headers="keys", tablefmt="github"))
 
 
-
 # ------------------------------
 # Forecastability Metrics
 # ------------------------------
@@ -142,6 +149,7 @@ baseline_metrics = {
     "selected_model": selected_model,
     "pass_ci": pass_ci,
     "metadata": {
+        "input_hash": input_hash,
         "tag": "v0.1-baseline",
         "phase": active_phase
     }
@@ -160,10 +168,27 @@ if include_drift_monitor(active_phase):
         "last_trained": datetime.now().strftime("%Y-%m-%d"),
         **drift_info
     }
+
+    plot_residual_drift(residuals_df, selected_model, output_path, window=30)
+    plot_residual_histograms(residuals_df, selected_model, output_path, window=30)
+
+    # ------------------------------
+    # CI Enforcement (Drift Trigger)
+    # ------------------------------
+    if active_phase >= 2 and drift_info.get("drift_detected", False):
+        raise ValueError("❌ Drift detected. CI gate failed. Retraining required.")
+
 # ------------------------------
+if active_phase >= 2:
+    log.info("Decomposing residuals for error analysis...")
+    error_breakdown = decompose_errors(residuals_df, forecast_cols)
+    with open(os.path.join(output_path, "error_breakdown.json"), "w") as f:
+        json.dump(error_breakdown, f, indent=2)
+    log.info("🧠 Error decomposition saved to error_breakdown.json")
 
 if include_serve_hash(active_phase):
-    baseline_metrics["metadata"]["serve_hash"] = "abc1234"
+    serve_hash = generate_serve_hash(baseline_metrics)
+    baseline_metrics["metadata"]["serve_hash"] = serve_hash
 
 metrics_path = os.path.join(output_path, "baseline_metrics.json")
 with open(metrics_path, "w") as f:
@@ -199,6 +224,6 @@ log.info(f"🧾 Metadata saved to: {output_path}/run_info.json")
 # ------------------------------
 # Visual Debug
 # ------------------------------
-visual_debug(df, forecasts, forecastability, forecast_cols, output_path)
+visual_debug(df, forecasts, forecastability, forecast_cols, output_path, residuals_df)
 log.info(f"✅ Run completed successfully. Outputs saved to: {output_path}")
 log.info(f"🔍 Visualizations saved to: {os.path.join(output_path, 'plots')}")
