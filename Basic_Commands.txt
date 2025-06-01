@@ -15,3 +15,26 @@ python scripts/baseline_sf.py `
   --horizon 14 `
   --tag demo `
   --phase 1
+
+# Validate Hashes
+python tests/test_ci_runtime.py --run_dir data/outputs/baseline/demo --data data/raw/univariate_example.csv
+
+
+python src/utils/ci_utils.py --audit_log data/outputs/baseline/demo/audit_log.json --output_dir data/outputs/baseline/demo
+
+python scripts/visual_delta_audit.py --output_path data/outputs/baseline/demo
+
+
+CI Full Pipeline till now:
+
+# Regenerate forecasts from saved outputs
+python scripts/baseline_sf.py --data data/raw/univariate_example.csv --horizon 14 --tag demo --phase 4 --regenerate
+
+# Run CI test harness and drift scoring
+python tests/test_ci_runtime.py --run_dir data/outputs/baseline/demo --data data/raw/univariate_example.csv
+
+# Validate hash audit and CI integrity
+python src/utils/ci_utils.py --audit_log data/outputs/baseline/demo/audit_log.json --output_dir data/outputs/baseline/demo --log_ci_results
+
+# Generate delta plots comparing regenerated and original forecasts
+python scripts/visual_delta_audit.py --output_path data/outputs/baseline/demo

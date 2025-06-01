@@ -39,6 +39,8 @@ parser.add_argument("--tag", type=str, default=None, help="Optional run tag")
 parser.add_argument("--window_size", type=int, default=3, help="Window size for WindowAverage and SeasWA")
 parser.add_argument("--season_length", type=int, default=12, help="Season length for seasonal models")
 parser.add_argument("--phase", type=int, default=3, help="Forecast-Kernel phase (default: 3)")
+parser.add_argument("--regenerate", action="store_true", help="Skip training and reload forecasts from file")
+
 args = parser.parse_args()
 
 active_phase = args.phase
@@ -86,8 +88,17 @@ models = [
     HoltWinters(season_length=args.season_length)
 ]
 
-sf = StatsForecast(models=models, freq='D', n_jobs=-1)
-forecasts = sf.forecast(df=cutoff_df, h=h)
+forecast_file = os.path.join(output_path, "baseline_forecasts.csv")
+if args.regenerate and os.path.exists(forecast_file):
+    log.info("🔁 Regeneration mode: loading saved forecasts...")
+    forecasts = pd.read_csv(forecast_file)
+    forecasts["ds"] = pd.to_datetime(forecasts["ds"])
+else:
+    sf = StatsForecast(models=models, freq='D', n_jobs=-1)
+    forecasts = sf.forecast(df=cutoff_df, h=h)
+
+    log.info("Computing EnsembleNaive as average of Naive and SeasonalNaive forecasts...")
+    forecasts["ensemble_naive"] = (forecasts["Naive"] + forecasts["SeasonalNaive"]) / 2
 
 # ------------------------------
 # EnsembleNaive (manual logic)
@@ -100,7 +111,12 @@ forecasts["ensemble_naive"] = (naive_forecast + seasonal_forecast) / 2
 # ------------------------------
 # Evaluation + Scoring
 # ------------------------------
-forecast_cols = [col for col in forecasts.columns if col not in ["unique_id", "ds"]]
+forecast_cols = [
+    col for col in forecasts.columns
+    if col not in ["unique_id", "ds", "run_id", "horizon", "n_models", "tag"]
+    and pd.api.types.is_numeric_dtype(forecasts[col])
+]
+
 results, residuals_df = evaluate_forecasts(forecasts, true_future, forecast_cols, output_path)
 log.info("\n" + tabulate(results, headers="keys", tablefmt="github"))
 
@@ -252,3 +268,16 @@ with open(os.path.join(output_path, "audit_log.json"), "w") as f:
 log.info("🔐 Audit log with file hashes saved.")
 log.info("Baseline StatsForecast run completed successfully.")
 # ------------------------------
+
+# ------------------------------
+# CI Hash Validation (Phase 3 Final Check)
+# ------------------------------
+from utils.ci_utils import validate_file_hashes
+
+audit_log_path = os.path.join(output_path, "audit_log.json")
+hash_mismatches = validate_file_hashes(audit_log_path, output_path)
+
+if hash_mismatches:
+    log.warning(f"⚠️ CI Hash Mismatch Detected:\n{json.dumps(hash_mismatches, indent=2)}")
+else:
+    log.info("✅ CI Hash Validation Passed")

@@ -109,3 +109,31 @@ def plot_residual_histograms(residuals_df: pd.DataFrame, model: str, output_path
     os.makedirs(drift_dir, exist_ok=True)
     plt.savefig(os.path.join(drift_dir, f"{model}_residual_histogram.png"))
     plt.close()
+
+
+def plot_forecast_deltas(true_df, original_forecasts, regenerated_forecasts, drift_scores, forecast_cols, output_path):
+    delta_path = os.path.join(output_path, "plots", "delta_audit")
+    os.makedirs(delta_path, exist_ok=True)
+
+    sample_ids = true_df["unique_id"].unique()[:3]
+
+    for uid in sample_ids:
+        actual = true_df[true_df["unique_id"] == uid].sort_values("ds")
+        orig = original_forecasts[original_forecasts["unique_id"] == uid].sort_values("ds")
+        regen = regenerated_forecasts[regenerated_forecasts["unique_id"] == uid].sort_values("ds")
+
+        for model in forecast_cols:
+            if model not in orig.columns or model not in regen.columns:
+                continue
+
+            plt.figure(figsize=(12, 6))
+            plt.plot(actual["ds"], actual["y"], label="Actual", color="black", linewidth=1.5)
+            plt.plot(orig["ds"], orig[model], label="Original", linestyle="--", color="blue")
+            plt.plot(regen["ds"], regen[model], label="Regenerated", linestyle=":", color="red")
+            drift_val = drift_scores.get(model, 0.0)
+            plt.title(f"{uid} | {model} Drift: {drift_val:+.2%}")
+            plt.legend()
+            plt.tight_layout()
+            fname = f"{uid}_{model}_delta.png"
+            plt.savefig(os.path.join(delta_path, fname))
+            plt.close()
