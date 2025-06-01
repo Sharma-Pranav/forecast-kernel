@@ -190,6 +190,13 @@ if include_serve_hash(active_phase):
     serve_hash = generate_serve_hash(baseline_metrics)
     baseline_metrics["metadata"]["serve_hash"] = serve_hash
 
+# ------------------------------
+# Save Baseline Metrics
+# ------------------------------
+from utils.git_utils import get_git_commit_hash
+baseline_metrics["metadata"]["commit_hash"] = get_git_commit_hash()
+
+
 metrics_path = os.path.join(output_path, "baseline_metrics.json")
 with open(metrics_path, "w") as f:
     json.dump(baseline_metrics, f, indent=2)
@@ -227,3 +234,21 @@ log.info(f"🧾 Metadata saved to: {output_path}/run_info.json")
 visual_debug(df, forecasts, forecastability, forecast_cols, output_path, residuals_df)
 log.info(f"✅ Run completed successfully. Outputs saved to: {output_path}")
 log.info(f"🔍 Visualizations saved to: {os.path.join(output_path, 'plots')}")
+
+from utils.hash_utils import compute_file_hash
+
+audit_log = {
+    "run_id": run_id,
+    "timestamp": datetime.utcnow().isoformat(),
+    "files": {
+        "baseline_metrics.json": compute_file_hash(metrics_path),
+        "baseline_forecasts.csv": compute_file_hash(forecast_file),
+        "run_info.json": compute_file_hash(os.path.join(output_path, "run_info.json"))
+    }
+}
+
+with open(os.path.join(output_path, "audit_log.json"), "w") as f:
+    json.dump(audit_log, f, indent=2)
+log.info("🔐 Audit log with file hashes saved.")
+log.info("Baseline StatsForecast run completed successfully.")
+# ------------------------------
