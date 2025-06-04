@@ -1,3 +1,5 @@
+"""Tests and helpers for validating CI runtime drift."""
+
 import os
 import json
 import argparse
@@ -13,7 +15,20 @@ from utils.hash_utils import compute_file_hash
 
 
 def run_ci_check(run_dir: str, data_path: str):
-    """Run CI validation on forecasts located in ``run_dir``."""
+    """Run CI validation on forecasts located in ``run_dir``.
+
+    Parameters
+    ----------
+    run_dir : str
+        Directory containing baseline forecasts and metrics.
+    data_path : str
+        Path to the true data CSV used for evaluation.
+
+    Returns
+    -------
+    dict
+        CI result summary written to ``ci_results.json``.
+    """
     metrics_path = os.path.join(run_dir, "baseline_metrics.json")
     forecasts_path = os.path.join(run_dir, "baseline_forecasts.csv")
 
@@ -70,6 +85,17 @@ def run_ci_check(run_dir: str, data_path: str):
 
 
 def test_run_ci_check(tmp_path):
+    """End-to-end smoke test for the CI validation routine.
+
+    Parameters
+    ----------
+    tmp_path : pathlib.Path
+        Temporary directory provided by ``pytest``.
+
+    Returns
+    -------
+    None
+    """
     data = pd.DataFrame(
         {
             "unique_id": ["A"] * 10,
@@ -116,3 +142,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     output = run_ci_check(args.run_dir, args.data)
     print(json.dumps(output, indent=2))
+
