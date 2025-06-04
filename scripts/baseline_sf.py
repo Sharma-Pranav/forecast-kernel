@@ -36,7 +36,7 @@ parser.add_argument("--data", type=str, required=True, help="Path to input CSV f
 parser.add_argument("--horizon", type=int, default=7, help="Forecast horizon")
 parser.add_argument("--output_dir", type=str, default="data/outputs/baseline", help="Root output directory")
 parser.add_argument("--tag", type=str, default=None, help="Optional run tag")
-parser.add_argument("--window_size", type=int, default=3, help="Window size for WindowAverage and SeasWA")
+parser.add_argument("--window_size", type=int, default=3, help="Window size (currently unused; placeholder for moving average models)")
 parser.add_argument("--season_length", type=int, default=12, help="Season length for seasonal models")
 parser.add_argument("--phase", type=int, default=3, help="Forecast-Kernel phase (default: 3)")
 parser.add_argument("--regenerate", action="store_true", help="Skip training and reload forecasts from file")
