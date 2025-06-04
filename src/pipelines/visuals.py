@@ -1,16 +1,39 @@
+"""Plotting utilities for visual diagnostics and drift checks."""
+
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+def visual_debug(
+    df: pd.DataFrame,
+    forecasts: pd.DataFrame,
+    forecastability: dict,
+    forecast_cols: list[str],
+    output_path: str,
+    residuals_df: pd.DataFrame | None = None,
+) -> None:
+    """Generate a suite of diagnostic plots for a forecast run.
 
-import matplotlib.pyplot as plt
-import seaborn as sns
-import os
-import pandas as pd
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Original time series data.
+    forecasts : pandas.DataFrame
+        Forecast results for each model.
+    forecastability : dict
+        Metrics describing overall forecastability.
+    forecast_cols : list
+        Names of forecast columns to visualise.
+    output_path : str
+        Directory where plots will be written.
+    residuals_df : pandas.DataFrame, optional
+        Residuals for each model, used for drift diagnostics.
 
-def visual_debug(df: pd.DataFrame, forecasts: pd.DataFrame, forecastability: dict,
-                 forecast_cols: list, output_path: str, residuals_df: pd.DataFrame = None):
+    Returns
+    -------
+    None
+    """
 
     plots_dir = os.path.join(output_path, "plots")
     os.makedirs(plots_dir, exist_ok=True)
@@ -72,9 +95,25 @@ def visual_debug(df: pd.DataFrame, forecasts: pd.DataFrame, forecastability: dic
                 plt.close()
 
 
-def plot_residual_drift(residuals_df: pd.DataFrame, model: str, output_path: str, window: int = 30):
-    """
-    Plots residuals over time for a selected model.
+def plot_residual_drift(
+    residuals_df: pd.DataFrame, model: str, output_path: str, window: int = 30
+) -> None:
+    """Plot residuals over time for a selected model.
+
+    Parameters
+    ----------
+    residuals_df : pandas.DataFrame
+        DataFrame containing residuals with ``ds`` and model columns.
+    model : str
+        Name of the model column to plot.
+    output_path : str
+        Directory for saving the plot.
+    window : int, optional
+        Smoothing window for highlight (unused currently).
+
+    Returns
+    -------
+    None
     """
     df_plot = residuals_df[["ds", "unique_id", model]].copy()
     df_plot = df_plot.sort_values(["unique_id", "ds"])
@@ -91,9 +130,25 @@ def plot_residual_drift(residuals_df: pd.DataFrame, model: str, output_path: str
         plt.savefig(os.path.join(output_path, "drift", f"{uid}_residuals.png"))
         plt.close()
 
-def plot_residual_histograms(residuals_df: pd.DataFrame, model: str, output_path: str, window: int = 30):
-    """
-    Plots histograms for past and recent residuals.
+def plot_residual_histograms(
+    residuals_df: pd.DataFrame, model: str, output_path: str, window: int = 30
+) -> None:
+    """Compare distribution of past and recent residuals.
+
+    Parameters
+    ----------
+    residuals_df : pandas.DataFrame
+        Residual data for a single model.
+    model : str
+        Column name of the residuals to compare.
+    output_path : str
+        Directory for saving the plot.
+    window : int, optional
+        Number of recent observations to treat as "recent".
+
+    Returns
+    -------
+    None
     """
     residuals_df = residuals_df.sort_values("ds")
     recent = residuals_df[model].iloc[-window:]
@@ -111,7 +166,35 @@ def plot_residual_histograms(residuals_df: pd.DataFrame, model: str, output_path
     plt.close()
 
 
-def plot_forecast_deltas(true_df, original_forecasts, regenerated_forecasts, drift_scores, forecast_cols, output_path):
+def plot_forecast_deltas(
+    true_df: pd.DataFrame,
+    original_forecasts: pd.DataFrame,
+    regenerated_forecasts: pd.DataFrame,
+    drift_scores: dict,
+    forecast_cols: list[str],
+    output_path: str,
+) -> None:
+    """Visualise differences between original and regenerated forecasts.
+
+    Parameters
+    ----------
+    true_df : pandas.DataFrame
+        Actual observations for the forecast period.
+    original_forecasts : pandas.DataFrame
+        Forecasts from the original run.
+    regenerated_forecasts : pandas.DataFrame
+        Newly generated forecasts to compare.
+    drift_scores : dict
+        Mapping of model name to drift score.
+    forecast_cols : list
+        Names of forecast columns to visualise.
+    output_path : str
+        Base directory for saving comparison plots.
+
+    Returns
+    -------
+    None
+    """
     delta_path = os.path.join(output_path, "plots", "delta_audit")
     os.makedirs(delta_path, exist_ok=True)
 
@@ -137,3 +220,4 @@ def plot_forecast_deltas(true_df, original_forecasts, regenerated_forecasts, dri
             fname = f"{uid}_{model}_delta.png"
             plt.savefig(os.path.join(delta_path, fname))
             plt.close()
+

@@ -1,3 +1,5 @@
+"""Run a baseline StatsForecast pipeline and save results."""
+
 import os
 import sys
 import io
@@ -281,3 +283,4 @@ if hash_mismatches:
     log.warning(f"⚠️ CI Hash Mismatch Detected:\n{json.dumps(hash_mismatches, indent=2)}")
 else:
     log.info("✅ CI Hash Validation Passed")
+

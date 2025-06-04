@@ -1,8 +1,25 @@
+"""CI helpers for validating hashed file outputs."""
+
 import json
 import os
 from utils.hash_utils import compute_file_hash
 
-def validate_file_hashes(audit_log_path, output_dir):
+def validate_file_hashes(audit_log_path: str, output_dir: str) -> dict:
+    """Validate a set of files against hashes stored in an audit log.
+
+    Parameters
+    ----------
+    audit_log_path : str
+        Path to ``audit_log.json`` produced during the run.
+    output_dir : str
+        Directory containing the files to check.
+
+    Returns
+    -------
+    dict
+        Mapping of file names to mismatch information. Empty if all match.
+    """
+
     with open(audit_log_path, "r") as f:
         audit_data = json.load(f)
 
@@ -75,3 +92,4 @@ if __name__ == "__main__":
         }
         with open(os.path.join(args.output_dir, "ci_hash_results.json"), "w") as f:
             json.dump(result, f, indent=2)
+

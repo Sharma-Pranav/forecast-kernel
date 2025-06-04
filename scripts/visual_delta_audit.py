@@ -1,3 +1,5 @@
+"""CLI for generating delta plots comparing forecast versions."""
+
 import os
 import argparse
 import pandas as pd
