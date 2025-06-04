@@ -52,7 +52,11 @@ def evaluate_forecasts(
 
         residual_df = joined[["unique_id", "ds"]].copy()
         residual_df[model] = y_true - y_pred
+        residual_df = residual_df.set_index(["unique_id", "ds"])
         residuals.append(residual_df)
 
-    residuals_df = pd.concat(residuals, axis=0).groupby(["unique_id", "ds"], as_index=False).first()
+    if residuals:
+        residuals_df = pd.concat(residuals, axis=1).reset_index()
+    else:
+        residuals_df = pd.DataFrame(columns=["unique_id", "ds"])
     return pd.DataFrame(metrics), residuals_df
