@@ -19,9 +19,14 @@ args = parser.parse_args()
 # ------------------------------
 METRICS_PATH = os.path.join(args.run_dir, "baseline_metrics.json")
 FORECASTS_PATH = os.path.join(args.run_dir, "baseline_forecasts.csv")
+AUDIT_LOG_PATH = os.path.join(args.run_dir, "audit_log.json")
 
 with open(METRICS_PATH) as f:
     baseline = json.load(f)
+
+with open(AUDIT_LOG_PATH) as f:
+    audit_log = json.load(f)
+expected_hash = audit_log.get("files", {}).get("baseline_metrics.json")
 
 forecasts = pd.read_csv(FORECASTS_PATH)
 true_df = pd.read_csv(args.data)
@@ -67,7 +72,7 @@ score_drift = {
 }
 
 hash_now = compute_file_hash(METRICS_PATH)
-hash_match = hash_now == compute_file_hash(METRICS_PATH)
+hash_match = hash_now == expected_hash
 
 ci_result = {
     "run_id": baseline.get("series_id"),
