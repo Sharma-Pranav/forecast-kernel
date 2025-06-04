@@ -4,7 +4,7 @@ import logging
 import os
 import sys
 
-def setup_logger(log_path: str = None, logger_name: str = "forecast"):
+def setup_logger(log_path: str | None = None, logger_name: str = "forecast") -> logging.Logger:
     """Initialise a basic logger that also writes to ``log_path`` if given.
 
     Parameters

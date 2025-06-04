@@ -51,7 +51,7 @@ def validate_audit_hashes(
     print("✅ All hashes match audit log.")
     return True
 
-def main():
+def main() -> None:
     """Entry point for the ``run_ci_check`` command.
 
     Returns

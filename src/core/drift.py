@@ -5,7 +5,7 @@ import pandas as pd
 
 def detect_residual_drift(
     residuals_df: pd.DataFrame, model: str, window_size: int = 14
-):
+) -> dict:
     """Detect distribution shift in residuals using a KS test.
 
     Parameters

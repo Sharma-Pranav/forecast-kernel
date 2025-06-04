@@ -9,10 +9,10 @@ def visual_debug(
     df: pd.DataFrame,
     forecasts: pd.DataFrame,
     forecastability: dict,
-    forecast_cols: list,
+    forecast_cols: list[str],
     output_path: str,
-    residuals_df: pd.DataFrame = None,
-):
+    residuals_df: pd.DataFrame | None = None,
+) -> None:
     """Generate a suite of diagnostic plots for a forecast run.
 
     Parameters
@@ -97,7 +97,7 @@ def visual_debug(
 
 def plot_residual_drift(
     residuals_df: pd.DataFrame, model: str, output_path: str, window: int = 30
-):
+) -> None:
     """Plot residuals over time for a selected model.
 
     Parameters
@@ -132,7 +132,7 @@ def plot_residual_drift(
 
 def plot_residual_histograms(
     residuals_df: pd.DataFrame, model: str, output_path: str, window: int = 30
-):
+) -> None:
     """Compare distribution of past and recent residuals.
 
     Parameters
@@ -167,13 +167,13 @@ def plot_residual_histograms(
 
 
 def plot_forecast_deltas(
-    true_df,
-    original_forecasts,
-    regenerated_forecasts,
-    drift_scores,
-    forecast_cols,
-    output_path,
-):
+    true_df: pd.DataFrame,
+    original_forecasts: pd.DataFrame,
+    regenerated_forecasts: pd.DataFrame,
+    drift_scores: dict,
+    forecast_cols: list[str],
+    output_path: str,
+) -> None:
     """Visualise differences between original and regenerated forecasts.
 
     Parameters

@@ -4,7 +4,7 @@ import json
 import os
 from utils.hash_utils import compute_file_hash
 
-def validate_file_hashes(audit_log_path, output_dir):
+def validate_file_hashes(audit_log_path: str, output_dir: str) -> dict:
     """Validate a set of files against hashes stored in an audit log.
 
     Parameters

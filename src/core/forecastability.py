@@ -6,7 +6,7 @@ from scipy.stats import variation
 from scipy.signal import periodogram
 
 
-def spectral_entropy(series):
+def spectral_entropy(series: pd.Series | np.ndarray) -> float:
     """Compute normalized spectral entropy of a series.
 
     Parameters
@@ -26,7 +26,7 @@ def spectral_entropy(series):
     return -np.sum(Pxx * np.log(Pxx)) / np.log(len(Pxx))
 
 
-def classify_forecastability(adi, cv2, entropy):
+def classify_forecastability(adi: float, cv2: float, entropy: float) -> str:
     """Map ADI, CV² and entropy to a qualitative label.
 
     Parameters

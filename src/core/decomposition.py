@@ -3,8 +3,11 @@
 import numpy as np
 import json
 import os
+import pandas as pd
 
-def decompose_errors(residuals_df, forecast_cols):
+def decompose_errors(
+    residuals_df: pd.DataFrame, forecast_cols: list[str]
+) -> dict:
     """Return bias, variance and noise components for each model.
 
     Parameters

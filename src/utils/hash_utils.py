@@ -3,7 +3,7 @@
 import hashlib
 import json
 
-def compute_file_hash(path, algo='sha256') -> str:
+def compute_file_hash(path: str, algo: str = 'sha256') -> str:
     """Return the digest of ``path`` using the given algorithm.
 
     Parameters

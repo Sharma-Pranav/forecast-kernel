@@ -2,8 +2,11 @@
 
 from statsmodels.stats.diagnostic import acorr_ljungbox
 from scipy.stats import ttest_rel
+import pandas as pd
 
-def compute_dm_test(forecasts_df, actuals_df, model_1: str, model_2: str):
+def compute_dm_test(
+    forecasts_df: pd.DataFrame, actuals_df: pd.DataFrame, model_1: str, model_2: str
+) -> dict:
     """Return DM statistic and p-value comparing two forecast columns.
 
     Parameters

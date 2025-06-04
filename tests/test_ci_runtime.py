@@ -4,6 +4,7 @@ import os
 import json
 import argparse
 import sys
+from pathlib import Path
 from datetime import datetime
 
 import pandas as pd
@@ -14,7 +15,7 @@ from core.evaluation import evaluate_forecasts
 from utils.hash_utils import compute_file_hash
 
 
-def run_ci_check(run_dir: str, data_path: str):
+def run_ci_check(run_dir: str, data_path: str) -> dict:
     """Run CI validation on forecasts located in ``run_dir``.
 
     Parameters
@@ -84,7 +85,7 @@ def run_ci_check(run_dir: str, data_path: str):
     return ci_result
 
 
-def test_run_ci_check(tmp_path):
+def test_run_ci_check(tmp_path: Path) -> None:
     """End-to-end smoke test for the CI validation routine.
 
     Parameters

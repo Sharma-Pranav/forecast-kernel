@@ -39,7 +39,7 @@ def validate_audit_hashes(audit_log_path: str, base_dir: str) -> bool:
     print("✅ All hashes match audit log.")
     return True
 
-def main():
+def main() -> None:
     """Entry point for the ``validate_hashes`` command.
 
     Returns

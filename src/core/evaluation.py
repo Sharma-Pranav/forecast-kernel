@@ -7,9 +7,9 @@ from sklearn.metrics import mean_absolute_error
 def evaluate_forecasts(
     forecasts: pd.DataFrame,
     true_future: pd.DataFrame,
-    forecast_cols: list,
+    forecast_cols: list[str],
     output_path: str,
-):
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Compute MAE, bias and residuals for multiple forecast columns.
 
     Parameters
