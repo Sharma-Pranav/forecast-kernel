@@ -1,40 +1,60 @@
-# 🧪 Activate Virtual Environment
-.venv\Scripts\Activate.ps1
+# 📦 Forecast-Kernel Bootstrap — Full Phase 1–4 Execution
 
-# (Optional) Set alias for quicker reuse
-Set-Alias activate-env ".venv\Scripts\Activate.ps1"
-activate-env
+# 1️⃣ Activate or Create Virtual Environment
+if (-not (Test-Path ".venv")) {
+    Write-Host "Creating .venv with Python 3.10..."
+    uv venv --python=3.10 .venv
+}
+. .venv\Scripts\Activate.ps1
 
-# 👤 Git Config (one-time setup)
+# 2️⃣ Editable Package Install
+Write-Host "Installing dependencies from requirements.txt..."
+uv pip install -r requirements.txt
+
+Write-Host "Installing forecastkernel in editable mode..."
+pip install -e .
+
+# 3️⃣ Git Identity (one-time setup)
 git config --global user.name "Pranav Sharma"
 git config --global user.email "pranavsharma619@gmail.com"
 
-# 🚀 Run Baseline Phase 1 Script
-python scripts/baseline_sf.py `
+# 4️⃣ Run Baseline Phase 1 Script
+python -m forecastkernel.scripts.baseline_sf `
   --data data/raw/univariate_example.csv `
   --horizon 14 `
   --tag demo `
   --phase 1
 
-# Validate Hashes
-python tests/test_ci_runtime.py --run_dir data/outputs/baseline/demo --data data/raw/univariate_example.csv
+# 5️⃣ Run CI Runtime Tests
+python -m forecastkernel.tests.test_ci_runtime `
+  --run_dir data/outputs/baseline/demo `
+  --data data/raw/univariate_example.csv
 
+# 6️⃣ Run Audit Hash Check
+python -m forecastkernel.utils.ci_utils `
+  --audit_log data/outputs/baseline/demo/audit_log.json `
+  --output_dir data/outputs/baseline/demo
 
-python src/utils/ci_utils.py --audit_log data/outputs/baseline/demo/audit_log.json --output_dir data/outputs/baseline/demo
+# 7️⃣ Generate Visual Delta Audit
+python -m forecastkernel.scripts.visual_delta_audit `
+  --output_path data/outputs/baseline/demo
 
-python scripts/visual_delta_audit.py --output_path data/outputs/baseline/demo
+# 🔁 Optional: Regeneration + Delta Recheck
+python -m forecastkernel.scripts.baseline_sf `
+  --data data/raw/univariate_example.csv `
+  --horizon 14 `
+  --tag demo `
+  --phase 4 `
+  --regenerate
 
+python -m forecastkernel.tests.test_ci_runtime `
+  --run_dir data/outputs/baseline/demo `
+  --data data/raw/univariate_example.csv
 
-CI Full Pipeline till now:
+python -m forecastkernel.utils.ci_utils `
+  --audit_log data/outputs/baseline/demo/audit_log.json `
+  --output_dir data/outputs/baseline/demo `
+  --log_ci_results
 
-# Regenerate forecasts from saved outputs
-python scripts/baseline_sf.py --data data/raw/univariate_example.csv --horizon 14 --tag demo --phase 4 --regenerate
-
-# Run CI test harness and drift scoring
-python tests/test_ci_runtime.py --run_dir data/outputs/baseline/demo --data data/raw/univariate_example.csv
-
-# Validate hash audit and CI integrity
-python src/utils/ci_utils.py --audit_log data/outputs/baseline/demo/audit_log.json --output_dir data/outputs/baseline/demo --log_ci_results
-
-# Generate delta plots comparing regenerated and original forecasts
-python scripts/visual_delta_audit.py --output_path data/outputs/baseline/demo
+python -m forecastkernel.scripts.visual_delta_audit `
+  --output_path data/outputs/baseline/demo

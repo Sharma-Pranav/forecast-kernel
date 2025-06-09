@@ -4,7 +4,7 @@ import os
 import argparse
 import pandas as pd
 import json
-from pipelines.visuals import plot_forecast_deltas
+from forecastkernel.pipelines.visuals import plot_forecast_deltas
 
 parser = argparse.ArgumentParser(description="Visual Delta Audit for Forecast Regeneration")
 parser.add_argument("--output_path", type=str, required=True, help="Path to output directory with regenerated forecasts")

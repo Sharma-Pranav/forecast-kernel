@@ -2,6 +2,12 @@
 
 import os
 import sys
+import sys
+import os
+import shutil
+# Add project root to sys.path
+# sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 import io
 import json
 import argparse
@@ -13,19 +19,23 @@ from statsforecast.models import (
     Naive, SeasonalNaive, RandomWalkWithDrift,
     CrostonSBA, HoltWinters
 )
-from core.dm_test import compute_dm_test
-from core.evaluation import evaluate_forecasts
-from core.forecastability import compute_forecastability_metrics
-from pipelines.visuals import visual_debug
-from core.phase_handler import include_dm_test, include_drift_monitor, include_serve_hash
-from utils.hash_utils import compute_file_hash
-from core.hash_utils import generate_serve_hash
-from core.decomposition import decompose_errors
+from forecastkernel.utils.mlflow_utils import log_mlflow_metrics
 
-from core.drift import detect_residual_drift
-from pipelines.visuals import plot_residual_drift, plot_residual_histograms
-
-
+from forecastkernel.core.dm_test import compute_dm_test
+from forecastkernel.core.evaluation import evaluate_forecasts
+from forecastkernel.core.forecastability import compute_forecastability_metrics
+from forecastkernel.pipelines.visuals import visual_debug
+from forecastkernel.core.phase_handler import include_dm_test, include_drift_monitor, include_serve_hash
+from forecastkernel.utils.hash_utils import compute_file_hash
+from forecastkernel.core.hash_utils import generate_serve_hash
+from forecastkernel.core.decomposition import decompose_errors
+from forecastkernel.utils.git_utils import get_git_commit_hash
+from forecastkernel.utils.hash_utils import compute_file_hash
+from forecastkernel.utils.ci_utils import validate_file_hashes
+from forecastkernel.core.drift import detect_residual_drift
+from forecastkernel.pipelines.visuals import plot_residual_drift, plot_residual_histograms
+from forecastkernel.schemas.input_schema import forecast_input_schema
+from forecastkernel.utils.logging_utils import setup_logger
 # ------------------------------
 # Ensure UTF-8 output
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
@@ -49,11 +59,11 @@ active_phase = args.phase
 # ------------------------------
 # Setup Run Metadata
 # ------------------------------
-run_id = args.tag or f"run-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
-output_path = os.path.join(args.output_dir, run_id)
+run_id = args.tag or "dvc-run"
+output_path = args.output_dir  # Do NOT embed timestamp for DVC stages
 os.makedirs(output_path, exist_ok=True)
 
-from utils.logging_utils import setup_logger
+
 log_path = os.path.join(output_path, "forecast_run.log")
 log = setup_logger(log_path, logger_name="baseline")
 
@@ -63,7 +73,8 @@ log = setup_logger(log_path, logger_name="baseline")
 log.info(f"Loading dataset from: {args.data}")
 input_hash = compute_file_hash(args.data)
 log.info(f"Input file hash: {input_hash}")
-df = pd.read_csv(args.data)
+df = pd.read_csv(args.data,  parse_dates=["ds"], dtype={"y": "float64"})
+forecast_input_schema.validate(df)
 df["ds"] = pd.to_datetime(df["ds"])
 df = df.sort_values(["unique_id", "ds"])
 
@@ -211,7 +222,7 @@ if include_serve_hash(active_phase):
 # ------------------------------
 # Save Baseline Metrics
 # ------------------------------
-from utils.git_utils import get_git_commit_hash
+
 baseline_metrics["metadata"]["commit_hash"] = get_git_commit_hash()
 
 
@@ -220,6 +231,16 @@ with open(metrics_path, "w") as f:
     json.dump(baseline_metrics, f, indent=2)
 log.info(f"✅ Metrics saved to: {metrics_path}")
 
+log_mlflow_metrics(
+    run_id=run_id,
+    df=df,
+    h=h,
+    metrics_dict=metrics_dict,
+    selected_model=selected_model,
+    pass_ci=pass_ci,
+    output_path=output_path,
+    phase=active_phase
+)
 # ------------------------------
 # Save Forecasts
 # ------------------------------
@@ -253,7 +274,7 @@ visual_debug(df, forecasts, forecastability, forecast_cols, output_path, residua
 log.info(f"✅ Run completed successfully. Outputs saved to: {output_path}")
 log.info(f"🔍 Visualizations saved to: {os.path.join(output_path, 'plots')}")
 
-from utils.hash_utils import compute_file_hash
+
 
 audit_log = {
     "run_id": run_id,
@@ -267,6 +288,9 @@ audit_log = {
 
 with open(os.path.join(output_path, "audit_log.json"), "w") as f:
     json.dump(audit_log, f, indent=2)
+
+
+
 log.info("🔐 Audit log with file hashes saved.")
 log.info("Baseline StatsForecast run completed successfully.")
 # ------------------------------
@@ -274,7 +298,7 @@ log.info("Baseline StatsForecast run completed successfully.")
 # ------------------------------
 # CI Hash Validation (Phase 3 Final Check)
 # ------------------------------
-from utils.ci_utils import validate_file_hashes
+
 
 audit_log_path = os.path.join(output_path, "audit_log.json")
 hash_mismatches = validate_file_hashes(audit_log_path, output_path)
@@ -284,3 +308,13 @@ if hash_mismatches:
 else:
     log.info("✅ CI Hash Validation Passed")
 
+# # 🔁 Sync final outputs to static DVC-tracked location
+# static_output_dir = "data/outputs/baseline"
+# os.makedirs(static_output_dir, exist_ok=True)
+
+# for name in ["baseline_metrics.json", "baseline_forecasts.csv", "run_info.json", "audit_log.json"]:
+#     src = os.path.join(output_path, name)
+#     dst = os.path.join(static_output_dir, name)
+#     if os.path.exists(src):
+#         shutil.copy2(src, dst)
+# log.info("📁 Final outputs synced to DVC-tracked static location.")
