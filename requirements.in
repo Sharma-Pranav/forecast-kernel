@@ -1,0 +1,45 @@
+# Core Data Stack
+numpy
+pandas
+pyyaml
+scikit-learn
+
+# Forecasting & Time Series Models
+statsmodels
+statsforecast
+
+# ML Infrastructure
+mlflow
+pandera
+dvc[s3]
+fastapi
+uvicorn
+
+# Deep Learning + Transformers
+torch
+transformers==4.40.1
+datasets==2.18.0
+accelerate==0.28.0
+
+# Orchestration & Scheduling
+GitPython
+python-dotenv
+requests
+tqdm
+
+# Evaluation / Logging
+tabulate
+rich
+plotly
+matplotlib
+
+# Cloud Bridge (Phase 5)
+boto3
+awscli
+
+# Optional Add-ons
+polars
+duckdb
+prefect
+seaborn
+packaging

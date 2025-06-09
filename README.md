@@ -10,3 +10,8 @@ This repository contains a small forecasting toolkit used for testing continuous
 Scripts under `scripts/` provide command line entry points for running baseline forecasts, validating hashes and visualising forecast deltas. Tests live in `tests/` and exercise the CI routines.
 
 The project follows a lightweight structure to keep components modular and easy to reuse across experiments.
+
+
+Activate environment in ubuntu/macos: source .venv/bin/activate
+Activate environment in windows (CMD): .venv\Scripts\activate.bat
+Activate environment in windows (Powershell): .venv\Scripts\Activate.ps1

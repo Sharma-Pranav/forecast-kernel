@@ -24,7 +24,7 @@ from core.decomposition import decompose_errors
 
 from core.drift import detect_residual_drift
 from pipelines.visuals import plot_residual_drift, plot_residual_histograms
-
+from schemas.input_schema import forecast_input_schema
 
 # ------------------------------
 # Ensure UTF-8 output
@@ -64,6 +64,7 @@ log.info(f"Loading dataset from: {args.data}")
 input_hash = compute_file_hash(args.data)
 log.info(f"Input file hash: {input_hash}")
 df = pd.read_csv(args.data)
+forecast_input_schema.validate(df)
 df["ds"] = pd.to_datetime(df["ds"])
 df = df.sort_values(["unique_id", "ds"])
 
