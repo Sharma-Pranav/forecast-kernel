@@ -5,6 +5,18 @@ MAX_BYTES = 500 * 1024 * 1024  # 500 MB
 LOG_PATH = "data/logs/storage_check.log"
 
 def get_total_size(directory):
+    """Recursively compute the total size of files within ``directory``.
+
+    Parameters
+    ----------
+    directory : str
+        Path to the directory whose contents should be measured.
+
+    Returns
+    -------
+    int
+        Total size in bytes of all files under ``directory``.
+    """
     total = 0
     for dirpath, _, filenames in os.walk(directory):
         for f in filenames:
@@ -14,6 +26,12 @@ def get_total_size(directory):
     return total
 
 def main():
+    """Entry point for the storage usage check script.
+
+    Returns
+    -------
+    None
+    """
     monitored_dirs = ["data", "data/outputs"]
     total = sum(get_total_size(d) for d in monitored_dirs if os.path.exists(d))
 
