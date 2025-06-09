@@ -3,16 +3,13 @@
 import os
 import json
 import argparse
-import sys
 from pathlib import Path
 from datetime import datetime
 
 import pandas as pd
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
-
-from core.evaluation import evaluate_forecasts
-from utils.hash_utils import compute_file_hash
+from forecastkernel.core.evaluation import evaluate_forecasts
+from forecastkernel.utils.hash_utils import compute_file_hash
 
 
 def run_ci_check(run_dir: str, data_path: str) -> dict:
