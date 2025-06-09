@@ -15,7 +15,7 @@ stages:
     outs:
     - path: data/outputs/baseline/audit_log.json
       hash: md5
-      md5: cc3dac14f385da01cdab62ceda29e060
+      md5: 24f18fa9cd892060d3baad7a15414548
       size: 379
     - path: data/outputs/baseline/baseline_forecasts.csv
       hash: md5
@@ -23,9 +23,16 @@ stages:
       size: 832
     - path: data/outputs/baseline/baseline_metrics.json
       hash: md5
-      md5: 33302cab79a173c00a168da294d15530
+      md5: 5db440cf7cd7eca07bd57fbec54850a6
       size: 1361
     - path: data/outputs/baseline/run_info.json
       hash: md5
-      md5: f162575a8336eeaf55d81343cd8ed1d5
+      md5: 8b0133b705789b50c5f70a510c015fa1
       size: 160
+  check-storage:
+    cmd: python src/forecastkernel/scripts/check_storage.py
+    deps:
+    - path: src/forecastkernel/scripts/check_storage.py
+      hash: md5
+      md5: 6dfa5adf988f8cd08b090e913ce9a497
+      size: 930

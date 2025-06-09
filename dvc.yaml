@@ -2,11 +2,17 @@ stages:
   forecast:
     cmd: python src/forecastkernel/scripts/baseline_sf.py --data data/raw/univariate_example.csv
     deps:
-      - data/raw/univariate_example.csv
-      - src/forecastkernel/scripts/baseline_sf.py
+    - data/raw/univariate_example.csv
+    - src/forecastkernel/scripts/baseline_sf.py
     outs:
-      - data/outputs/baseline/baseline_metrics.json
-      - data/outputs/baseline/baseline_forecasts.csv
-      - data/outputs/baseline/run_info.json
-      - data/outputs/baseline/audit_log.json
+    - data/outputs/baseline/baseline_metrics.json
+    - data/outputs/baseline/baseline_forecasts.csv
+    - data/outputs/baseline/run_info.json
+    - data/outputs/baseline/audit_log.json
     always_changed: true
+
+  check-storage:
+    cmd: python src/forecastkernel/scripts/check_storage.py
+    deps:
+    - src/forecastkernel/scripts/check_storage.py
+
