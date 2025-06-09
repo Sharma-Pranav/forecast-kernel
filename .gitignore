@@ -38,6 +38,7 @@ desktop.ini
 
 # Logs
 *.log
+*.mlflow_logs/
 
 # Misc
 *.bak
