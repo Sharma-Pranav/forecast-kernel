@@ -1,14 +1,14 @@
 import pandas as pd
 import pytest
-from schemas.input_schema import forecast_input_schema
-import pandera as pa 
+from forecastkernel.schemas.input_schema import forecast_input_schema
+import pandera as pa
 def test_valid_input_passes():
     df = pd.DataFrame({
-        "ts": ["2025-01-01", "2025-01-02"],
+        "ds": ["2025-01-01", "2025-01-02"],
         "unique_id": ["A", "A"],
         "y": [10.0, 12.0]
     })
-    df["ts"] = pd.to_datetime(df["ts"])
+    df["ds"] = pd.to_datetime(df["ds"])
     forecast_input_schema.validate(df)
 
 def test_missing_column_fails():
