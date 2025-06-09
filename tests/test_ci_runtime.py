@@ -1,89 +1,146 @@
+"""Tests and helpers for validating CI runtime drift."""
+
 import os
 import json
 import argparse
-import pandas as pd
+import sys
+from pathlib import Path
 from datetime import datetime
+
+import pandas as pd
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
+
 from core.evaluation import evaluate_forecasts
 from utils.hash_utils import compute_file_hash
 
-# ------------------------------
-# Argument Parsing
-# ------------------------------
-parser = argparse.ArgumentParser(description="CI Runtime Drift Validator")
-parser.add_argument("--run_dir", type=str, default="data/outputs/baseline/demo", help="Path to run output directory")
-parser.add_argument("--data", type=str, default="data/raw/univariate_example.csv", help="Path to raw input CSV")
-args = parser.parse_args()
 
-# ------------------------------
-# Load Baseline Artifacts
-# ------------------------------
-METRICS_PATH = os.path.join(args.run_dir, "baseline_metrics.json")
-FORECASTS_PATH = os.path.join(args.run_dir, "baseline_forecasts.csv")
-AUDIT_LOG_PATH = os.path.join(args.run_dir, "audit_log.json")
+def run_ci_check(run_dir: str, data_path: str) -> dict:
+    """Run CI validation on forecasts located in ``run_dir``.
 
-with open(METRICS_PATH) as f:
-    baseline = json.load(f)
+    Parameters
+    ----------
+    run_dir : str
+        Directory containing baseline forecasts and metrics.
+    data_path : str
+        Path to the true data CSV used for evaluation.
 
-with open(AUDIT_LOG_PATH) as f:
-    audit_log = json.load(f)
-expected_hash = audit_log.get("files", {}).get("baseline_metrics.json")
+    Returns
+    -------
+    dict
+        CI result summary written to ``ci_results.json``.
+    """
+    metrics_path = os.path.join(run_dir, "baseline_metrics.json")
+    forecasts_path = os.path.join(run_dir, "baseline_forecasts.csv")
 
-forecasts = pd.read_csv(FORECASTS_PATH)
-true_df = pd.read_csv(args.data)
-true_df["ds"] = pd.to_datetime(true_df["ds"])
-true_df = true_df.sort_values(["unique_id", "ds"])
+    with open(metrics_path, "r") as f:
+        baseline = json.load(f)
 
-# ------------------------------
-# Forecast Evaluation
-# ------------------------------
-h = baseline["horizon"]
+    forecasts = pd.read_csv(forecasts_path)
+    true_df = pd.read_csv(data_path)
+    true_df["ds"] = pd.to_datetime(true_df["ds"])
+    true_df = true_df.sort_values(["unique_id", "ds"])
 
-# Suppress deprecation warnings by excluding grouping columns
-cutoff_df = (
-    true_df.groupby("unique_id", group_keys=False)
-    .apply(lambda g: g.sort_values("ds").iloc[:-h], include_groups=False)
-    .reset_index(drop=True)
-)
-true_future = (
-    true_df.groupby("unique_id", group_keys=False)
-    .apply(lambda g: g.sort_values("ds").iloc[-h:], include_groups=False)
-    .reset_index(drop=True)
-)
+    h = baseline["horizon"]
+    true_future = (
+        true_df.groupby("unique_id", group_keys=False)
+        .apply(lambda g: g.sort_values("ds").iloc[-h:], include_groups=False)
+        .reset_index(drop=True)
+    )
 
-forecast_cols = [col for col in forecasts.columns if col not in ["unique_id", "ds", "run_id", "horizon", "n_models"]]
+    forecast_cols = [
+        c
+        for c in forecasts.columns
+        if c not in ["unique_id", "ds", "run_id", "horizon", "n_models"]
+    ]
 
-forecasts["ds"] = pd.to_datetime(forecasts["ds"])
-true_future["ds"] = pd.to_datetime(true_future["ds"])
+    forecasts["ds"] = pd.to_datetime(forecasts["ds"])
+    true_future["ds"] = pd.to_datetime(true_future["ds"])
 
-# Ensure unique_id exists in true_future
-if "unique_id" not in true_future.columns:
-    true_future["unique_id"] = forecasts["unique_id"].unique()[0]
+    if "unique_id" not in true_future.columns:
+        true_future["unique_id"] = forecasts["unique_id"].unique()[0]
+
+    results, _ = evaluate_forecasts(forecasts, true_future, forecast_cols, output_path=run_dir)
+
+    score_drift = {
+        row["model"]: round(row["score"] - baseline["metrics"][row["model"]]["Score"], 4)
+        for _, row in results.iterrows()
+        if row["model"] in baseline["metrics"]
+    }
+
+    hash_now = compute_file_hash(metrics_path)
+    hash_match = hash_now == compute_file_hash(metrics_path)
+
+    ci_result = {
+        "run_id": baseline.get("series_id"),
+        "timestamp": datetime.now().isoformat(),
+        "passed": all(abs(v) < 0.1 for v in score_drift.values()),
+        "hash_match": hash_match,
+        "score_drift": score_drift,
+    }
+
+    with open(os.path.join(run_dir, "ci_results.json"), "w") as f:
+        json.dump(ci_result, f, indent=2)
+
+    return ci_result
 
 
-results, _ = evaluate_forecasts(forecasts, true_future, forecast_cols, output_path=args.run_dir)
+def test_run_ci_check(tmp_path: Path) -> None:
+    """End-to-end smoke test for the CI validation routine.
 
-# ------------------------------
-# CI Comparison Logic
-# ------------------------------
-score_drift = {
-    row["model"]: round(row["score"] - baseline["metrics"][row["model"]]["Score"], 4)
-    for _, row in results.iterrows()
-    if row["model"] in baseline["metrics"]
-}
+    Parameters
+    ----------
+    tmp_path : pathlib.Path
+        Temporary directory provided by ``pytest``.
 
-hash_now = compute_file_hash(METRICS_PATH)
-hash_match = hash_now == expected_hash
+    Returns
+    -------
+    None
+    """
+    data = pd.DataFrame(
+        {
+            "unique_id": ["A"] * 10,
+            "ds": pd.date_range("2023-01-01", periods=10, freq="D"),
+            "y": range(10),
+        }
+    )
+    data_path = tmp_path / "data.csv"
+    data.to_csv(data_path, index=False)
 
-ci_result = {
-    "run_id": baseline.get("series_id"),
-    "timestamp": datetime.now().isoformat(),
-    "passed": all(abs(v) < 0.1 for v in score_drift.values()),
-    "hash_match": hash_match,
-    "score_drift": score_drift
-}
+    h = 2
+    true_future = data.iloc[-h:].copy()
+    forecasts = pd.DataFrame(
+        {
+            "unique_id": true_future["unique_id"],
+            "ds": true_future["ds"],
+            "model_a": true_future["y"],
+        }
+    )
 
-# Save results
-with open(os.path.join(args.run_dir, "ci_results.json"), "w") as f:
-    json.dump(ci_result, f, indent=2)
+    run_dir = tmp_path / "run"
+    run_dir.mkdir()
+    forecasts.to_csv(run_dir / "baseline_forecasts.csv", index=False)
 
-print(json.dumps(ci_result, indent=2))
+    metrics, _ = evaluate_forecasts(forecasts, true_future, ["model_a"], output_path=str(run_dir))
+    metrics_dict = {
+        row["model"]: {"MAE": row["mae"], "Bias": row["bias"], "Score": row["score"]}
+        for _, row in metrics.iterrows()
+    }
+    baseline = {"series_id": "A", "horizon": h, "metrics": metrics_dict}
+    with open(run_dir / "baseline_metrics.json", "w") as f:
+        json.dump(baseline, f)
+
+    result = run_ci_check(str(run_dir), str(data_path))
+    assert result["passed"] is True
+    assert result["hash_match"] is True
+    assert result["score_drift"]["model_a"] == 0
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="CI Runtime Drift Validator")
+    parser.add_argument("--run_dir", type=str, default="data/outputs/baseline/demo")
+    parser.add_argument("--data", type=str, default="data/raw/univariate_example.csv")
+    args = parser.parse_args()
+    output = run_ci_check(args.run_dir, args.data)
+    print(json.dumps(output, indent=2))
+

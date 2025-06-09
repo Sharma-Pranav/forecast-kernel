@@ -1,8 +1,28 @@
+"""Break down residual errors into interpretable components."""
+
 import numpy as np
 import json
 import os
+import pandas as pd
 
-def decompose_errors(residuals_df, forecast_cols):
+def decompose_errors(
+    residuals_df: pd.DataFrame, forecast_cols: list[str]
+) -> dict:
+    """Return bias, variance and noise components for each model.
+
+    Parameters
+    ----------
+    residuals_df : pandas.DataFrame
+        DataFrame of residuals with columns matching ``forecast_cols``.
+    forecast_cols : list
+        Names of forecast columns to analyse.
+
+    Returns
+    -------
+    dict
+        Mapping of model name to a dictionary of error breakdown statistics.
+    """
+
     breakdown = {}
     for model in forecast_cols:
         resids = residuals_df[model].dropna()

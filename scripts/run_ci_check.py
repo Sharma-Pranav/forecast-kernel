@@ -1,10 +1,30 @@
+"""Command line helper to validate CI audit log hashes."""
+
 import argparse
 import json
 import os
 import sys
 from utils.hash_utils import compute_file_hash
 
-def validate_audit_hashes(audit_log_path: str, base_dir: str, force: bool = False) -> bool:
+def validate_audit_hashes(
+    audit_log_path: str, base_dir: str, force: bool = False
+) -> bool:
+    """Check recorded file hashes against the actual files.
+
+    Parameters
+    ----------
+    audit_log_path : str
+        Path to ``audit_log.json`` produced during the baseline run.
+    base_dir : str
+        Directory containing the files to validate.
+    force : bool, optional
+        If ``True`` return success even when mismatches are found.
+
+    Returns
+    -------
+    bool
+        ``True`` if all hashes match or ``force`` is ``True``.
+    """
     with open(audit_log_path, "r") as f:
         audit_log = json.load(f)
 
@@ -31,7 +51,14 @@ def validate_audit_hashes(audit_log_path: str, base_dir: str, force: bool = Fals
     print("✅ All hashes match audit log.")
     return True
 
-def main():
+def main() -> None:
+    """Entry point for the ``run_ci_check`` command.
+
+    Returns
+    -------
+    None
+    """
+
     parser = argparse.ArgumentParser(description="Validate CI Hashes from audit log.")
     parser.add_argument("--audit_log", type=str, required=True, help="Path to audit_log.json")
     parser.add_argument("--base_dir", type=str, required=True, help="Base directory containing the files")
@@ -45,3 +72,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

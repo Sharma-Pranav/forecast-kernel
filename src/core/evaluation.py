@@ -1,27 +1,34 @@
-# import pandas as pd
+"""Utilities for evaluating forecast accuracy and residuals."""
 
-
-# def evaluate_forecasts(forecasts: pd.DataFrame, actuals: pd.DataFrame, forecast_cols: list) -> list:
-#     results = []
-#     for col in forecast_cols:
-#         merged = forecasts[["unique_id", "ds", col]].merge(actuals, on=["unique_id", "ds"])
-#         if not merged.empty:
-#             y_pred = merged[col]
-#             y_true = merged["y"]
-#             mae = abs(y_pred - y_true).mean()
-#             bias = (y_pred - y_true).mean()
-#             results.append({
-#                 "model": col,
-#                 "mae": round(mae, 2),
-#                 "bias": round(bias, 2),
-#                 "score": round(mae + abs(bias), 2)
-#             })
-#     return sorted(results, key=lambda x: x["score"])
 import os
 import pandas as pd
 from sklearn.metrics import mean_absolute_error
 
-def evaluate_forecasts(forecasts: pd.DataFrame, true_future: pd.DataFrame, forecast_cols: list, output_path: str):
+def evaluate_forecasts(
+    forecasts: pd.DataFrame,
+    true_future: pd.DataFrame,
+    forecast_cols: list[str],
+    output_path: str,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Compute MAE, bias and residuals for multiple forecast columns.
+
+    Parameters
+    ----------
+    forecasts : pandas.DataFrame
+        Forecast output for each model with ``unique_id`` and ``ds`` columns.
+    true_future : pandas.DataFrame
+        Actual observations to compare against.
+    forecast_cols : list
+        Names of columns in ``forecasts`` corresponding to model predictions.
+    output_path : str
+        Directory where intermediate outputs may be saved (unused).
+
+    Returns
+    -------
+    tuple[pandas.DataFrame, pandas.DataFrame]
+        A DataFrame of metrics per model and a DataFrame of residuals.
+    """
+
     metrics = []
     residuals = []
 
@@ -45,7 +52,11 @@ def evaluate_forecasts(forecasts: pd.DataFrame, true_future: pd.DataFrame, forec
 
         residual_df = joined[["unique_id", "ds"]].copy()
         residual_df[model] = y_true - y_pred
+        residual_df = residual_df.set_index(["unique_id", "ds"])
         residuals.append(residual_df)
 
-    residuals_df = pd.concat(residuals, axis=0).groupby(["unique_id", "ds"], as_index=False).first()
+    if residuals:
+        residuals_df = pd.concat(residuals, axis=1).reset_index()
+    else:
+        residuals_df = pd.DataFrame(columns=["unique_id", "ds"])
     return pd.DataFrame(metrics), residuals_df

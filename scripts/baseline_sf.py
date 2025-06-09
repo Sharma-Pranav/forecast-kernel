@@ -1,3 +1,5 @@
+"""Run a baseline StatsForecast pipeline and save results."""
+
 import os
 import sys
 import io
@@ -22,7 +24,7 @@ from core.decomposition import decompose_errors
 
 from core.drift import detect_residual_drift
 from pipelines.visuals import plot_residual_drift, plot_residual_histograms
-
+from schemas.input_schema import forecast_input_schema
 
 # ------------------------------
 # Ensure UTF-8 output
@@ -36,7 +38,7 @@ parser.add_argument("--data", type=str, required=True, help="Path to input CSV f
 parser.add_argument("--horizon", type=int, default=7, help="Forecast horizon")
 parser.add_argument("--output_dir", type=str, default="data/outputs/baseline", help="Root output directory")
 parser.add_argument("--tag", type=str, default=None, help="Optional run tag")
-parser.add_argument("--window_size", type=int, default=3, help="Window size for WindowAverage and SeasWA")
+parser.add_argument("--window_size", type=int, default=3, help="Window size (currently unused; placeholder for moving average models)")
 parser.add_argument("--season_length", type=int, default=12, help="Season length for seasonal models")
 parser.add_argument("--phase", type=int, default=3, help="Forecast-Kernel phase (default: 3)")
 parser.add_argument("--regenerate", action="store_true", help="Skip training and reload forecasts from file")
@@ -62,6 +64,7 @@ log.info(f"Loading dataset from: {args.data}")
 input_hash = compute_file_hash(args.data)
 log.info(f"Input file hash: {input_hash}")
 df = pd.read_csv(args.data)
+forecast_input_schema.validate(df)
 df["ds"] = pd.to_datetime(df["ds"])
 df = df.sort_values(["unique_id", "ds"])
 
@@ -281,3 +284,4 @@ if hash_mismatches:
     log.warning(f"⚠️ CI Hash Mismatch Detected:\n{json.dumps(hash_mismatches, indent=2)}")
 else:
     log.info("✅ CI Hash Validation Passed")
+
