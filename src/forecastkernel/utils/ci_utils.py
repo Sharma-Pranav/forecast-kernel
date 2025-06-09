@@ -2,6 +2,7 @@
 
 import json
 import os
+from datetime import datetime
 from forecastkernel.utils.hash_utils import compute_file_hash
 
 def validate_file_hashes(audit_log_path: str, output_dir: str) -> dict:
@@ -44,22 +45,6 @@ def validate_file_hashes(audit_log_path: str, output_dir: str) -> dict:
 if __name__ == "__main__":
     import argparse
     import json
-
-    parser = argparse.ArgumentParser(description="Validate CI File Hashes")
-    parser.add_argument("--audit_log", type=str, required=True, help="Path to audit_log.json")
-    parser.add_argument("--output_dir", type=str, required=True, help="Path to directory with files to validate")
-    args = parser.parse_args()
-
-    mismatches = validate_file_hashes(args.audit_log, args.output_dir)
-
-    if mismatches:
-        print("❌ Hash mismatches detected:")
-        print(json.dumps(mismatches, indent=2))
-    else:
-        print("✅ All hashes match. CI validation passed.")
-if __name__ == "__main__":
-    import argparse
-    import json
     import os
 
     parser = argparse.ArgumentParser(description="Validate CI File Hashes")
@@ -74,6 +59,9 @@ if __name__ == "__main__":
     if args.run_dir:
         args.audit_log = os.path.join(args.run_dir, "audit_log.json")
         args.output_dir = args.run_dir
+
+    if not args.audit_log or not args.output_dir:
+        parser.error("Either --run_dir or both --audit_log and --output_dir must be provided.")
 
     mismatches = validate_file_hashes(args.audit_log, args.output_dir)
 
