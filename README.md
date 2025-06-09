@@ -71,6 +71,30 @@ mlflow ui --backend-store-uri file:./.mlflow_logs
 dvc init
 dvc add data/outputs/baseline
 dvc stage add -n forecast -d data/raw/univariate_example.csv -d src/forecastkernel/scripts/baseline_sf.py -o data/outputs/baseline/baseline_metrics.json -o data/outputs/baseline/baseline_forecasts.csv -o data/outputs/baseline/run_info.json -o data/outputs/baseline/audit_log.json --always-changed python src/forecastkernel/scripts/baseline_sf.py --data data/raw/univariate_example.csv
+>> dvc stage add -n forecast \
+>>     -d data/raw/univariate_example.csv \
+>>     -d src/forecastkernel/scripts/baseline_sf.py \
+>>     -o data/outputs/baseline/baseline_metrics.json \
+>>     -o data/outputs/baseline/baseline_forecasts.csv \
+>>     -o data/outputs/baseline/run_info.json \
+>>     -o data/outputs/baseline/audit_log.json \
+>>     --always-changed \
+>>     python src/forecastkernel/scripts/baseline_sf.py --data data/raw/univariate_example.csv
+>>
 
+
+# Added a local DVC remote to store outputs
+dvc remote add -d localstore data/.dvcstore
 dvc push
 
+
+
+# When Ready for S3:
+#Add S3 remote:
+dvc remote add s3remote s3://your-bucket-name
+#Change default remote:
+
+dvc remote default s3remote
+#Push again:
+
+dvc push
