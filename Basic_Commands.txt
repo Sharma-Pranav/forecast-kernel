@@ -5,6 +5,8 @@ if (-not (Test-Path ".venv")) {
     Write-Host "Creating .venv with Python 3.10..."
     uv venv --python=3.10 .venv
 }
+
+# Activate Environment
 . .venv\Scripts\Activate.ps1
 
 # 2️⃣ Editable Package Install
