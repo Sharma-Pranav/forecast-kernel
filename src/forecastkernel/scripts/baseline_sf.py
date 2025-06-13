@@ -26,6 +26,7 @@ from forecastkernel.pipelines.visuals import visual_debug
 from forecastkernel.core.phase_handler import include_dm_test, include_drift_monitor, include_serve_hash
 from forecastkernel.core.hash_utils import generate_serve_hash
 from forecastkernel.core.decomposition import decompose_errors
+from forecastkernel.core.aggregation import compute_anchor_bias, enforce_cascade_checks
 from forecastkernel.utils.git_utils import get_git_commit_hash
 from forecastkernel.utils.hash_utils import compute_file_hash
 from forecastkernel.utils.ci_utils import validate_file_hashes
@@ -49,10 +50,15 @@ parser.add_argument("--window_size", type=int, default=3, help="Window size (cur
 parser.add_argument("--season_length", type=int, default=12, help="Season length for seasonal models")
 parser.add_argument("--phase", type=int, default=3, help="Forecast-Kernel phase (default: 3)")
 parser.add_argument("--regenerate", action="store_true", help="Skip training and reload forecasts from file")
+parser.add_argument("--aggregation_level", type=str, default="L1", help="Aggregation label for this run")
+parser.add_argument("--parent_run", type=str, default=None, help="Path to upstream run for cascade")
 
 args = parser.parse_args()
 
 active_phase = args.phase
+# Enforce cascade checks if parent run provided
+if args.parent_run:
+    enforce_cascade_checks(args.parent_run)
 # ------------------------------
 # Setup Run Metadata
 # ------------------------------
@@ -180,6 +186,7 @@ baseline_metrics = {
         "phase": active_phase
     }
 }
+baseline_metrics["metadata"]["aggregation_level"] = args.aggregation_level
 
 if include_dm_test(active_phase):
     dm_test_result = compute_dm_test(forecasts, true_future, selected_model, "ensemble_naive")
@@ -208,6 +215,13 @@ if include_drift_monitor(active_phase):
 if active_phase >= 2:
     log.info("Decomposing residuals for error analysis...")
     error_breakdown = decompose_errors(residuals_df, forecast_cols)
+    if args.parent_run:
+        anchor_forecasts = pd.read_csv(os.path.join(args.parent_run, "baseline_forecasts.csv"))
+        anchor_forecasts["ds"] = pd.to_datetime(anchor_forecasts["ds"])
+        bias_series = compute_anchor_bias(forecasts, anchor_forecasts, selected_model)
+        bias_value = round(float(bias_series.mean()), 4)
+        error_breakdown.setdefault(selected_model, {})["Anchor Bias"] = bias_value
+        baseline_metrics["anchor_bias"] = bias_value
     with open(os.path.join(output_path, "error_breakdown.json"), "w") as f:
         json.dump(error_breakdown, f, indent=2)
     log.info("🧠 Error decomposition saved to error_breakdown.json")
