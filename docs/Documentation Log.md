@@ -26,6 +26,23 @@ This document captures the step-by-step progression of building and validating a
 
 ---
 
+## Phase 0a: Data Pre-Flight
+
+**Goal:** Validate raw inputs for schema drift before running models.
+
+### Key Actions
+
+* Added `data_preflight.py` using DuckDB and Pandera for validation.
+* Runs optional Great Expectations checks when available.
+* Produces a `preflight_report.json` summarising pass/fail.
+
+### Key Files
+
+* `scripts/data_preflight.py`
+* `preflight_report.json`
+
+---
+
 ## Phase 1: Baseline Forecast Generation
 
 **Goal:** Build deterministic forecasts with clear scoring and evaluation.
