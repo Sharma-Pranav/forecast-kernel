@@ -1,142 +1,244 @@
-# 🗭 Forecast-GPT Codex — Forecast-Kernel v∞ (Aggregation Layer Enhanced)
+# 🗭 FORECAST‑GPT CODEX — Forecast‑Kernel v∞ (PyOD Extended Variant)
 
-**Author**: Pranav Sharma
+**Author**: Pranav Sharma  
+**Variant**: Anomaly Overlay Logic  
 
 ---
 
 ## 🌌 Strategic Intent
 
-Design a sovereign, scalable, and cost-conscious forecasting system that runs locally or in the cloud, with ≤12 tools, reproducible logic, **structure-aware aggregation descent**, and phase-gated CI.
+Design a sovereign, scalable, and cost‑conscious forecasting system that runs locally or in the cloud, using ≤12 core tools. It supports reproducible logic, structure-aware aggregation descent, anomaly overlays, and phase-gated CI/CD.
 
 ---
 
-## 1. North-Star Drivers
+## 🚩 1. North-Star Drivers
 
-| Driver          | Win Definition                       | Guardrail                                    |
-| --------------- | ------------------------------------ | -------------------------------------------- |
-| Sovereignty     | Swap any vendor in a weekend         | No closed SaaS                               |
-| Leverage        | Every artefact compounds velocity    | ≤ 12 primary tools                           |
-| Scalable Uplift | 1 series → 10,000 FM without rewrite | Bootstrap ≤ 5 min · Ops ≤ 2 h/wk · ≤ \$25/mo |
+| Driver         | Win Definition                       | Guardrail                              |
+|----------------|--------------------------------------|----------------------------------------|
+| Sovereignty    | Swap any vendor in a weekend         | No closed SaaS allowed                 |
+| Leverage       | Every artefact compounds velocity    | Max 12 primary tools                   |
+| Scalable Uplift| 1 series → 10,000 FM without rewrite | Bootstrap ≤5 min · Ops ≤2 h/week · <\$25/month |
 
-🧹 **Kill-List**: Delete anything that hasn't saved ≥ 1 hr or caught a bug in 90 days.
-
----
-
-## 2. Tool Stack (Core System)
-
-`git`, `uv`, `pandas`, `statsmodels`, `StatsForecast`, `Pandera`, `MLflow`, `DVC`, `FastAPI`, `Docker`
-**Optional**: `Polars`, `DuckDB`, `RAPIDS`, `Prefect`
+**🧹 Kill‑List**: Delete anything that hasn’t saved ≥1 hour or caught a bug in 90 days.
 
 ---
 
-## 3. Phase Roadmap (0–10)
+## 🧰 2. Tool Stack
 
-Each phase builds cleanly into the next, ensuring continuity and compound value:
+- **Core**: `git`, `uv`, `pandas`, `statsmodels`, `StatsForecast`, `Pandera`, `MLflow`, `DVC`, `FastAPI`, `Docker`, `PyOD`  
+- **Optional**: `Polars`, `DuckDB`, `RAPIDS`, `Prefect`
 
-* Phase 0–2 establish repeatable, tracked baselines.
-* Phase 3–6 enforce reproducibility, serving, and drift stability.
-* Phase 7 leverages drift-controlled, baseline-aware series to apply regressors cleanly.
-* Phase 8 uses those same foundations to benchmark against pretrained models.
-* Phase 9–10 scale the system outward: first economically (SaaS) then institutionally (audit & trust).
+---
 
-### 🔹 Phase 0 — Bootstrap
+## 🧭 3. Phase Roadmap (0–10)
 
-**Goal**: Deterministic environment setup
-**Pass If**: `.venv` activates + prints hello
+Each phase includes **GOAL**, **PASS IF**, and **BENEFIT** with explicit success criteria.
+
+### Phase 0 — Bootstrap
+**Goal**: Deterministic environment setup  
+**Pass If**: `.venv` activates and prints "hello" in under 5 min using ≤3 commands  
+**Benefit**: Cold-start to CI-ready in <300 s  
 **Tools**: `git`, `uv`, `.venv`, `scripts/bootstrap.ps1`
-**Kill If**: Setup takes > 5 minutes or uses > 3 commands
-**Benefit**: Cold-start to CI-ready in under 300s
 
-### 🔹 Phase 1 — Baseline Forecast Battery
+### **Phase 0a — Data Pre-Flight** *(NEW)*  
+Goal Catch schema drift before code runs  
+Pass `preflight_report.json`; no column drift vs contract  
+Benefit Fail-fast on bad data  
+Tools `Pandera`, `Great Expectations`, `duckdb`
 
-**Goal**: Run baseline forecast, track metrics
-**Pass If**: `baseline_metrics.json` saved via `scripts/baseline_sf.py`
-**Models**: Naive, SeasonalNaive, Drift, Holt-Winters, Croston, ensemble\_naive
-**CI Rule**: Model must beat `min(ensemble_naive, holt_winters)` on Score
-**Kill If**: MAPE gain < 5% vs naive
-**Benefit**: Reliable control-arm for all future models
 
-### 🔹 Phase 1b — Aggregation-Aware CI Descent
+### Phase 1 — Baseline Forecast Battery
+**Goal**: Establish benchmark accuracy and metrics  
+**Pass If**: `baseline_metrics.json` saved; MAPE at least 5% better than Naïve  
+**Tools**: Naïve, SeasonalNaïve, Drift, Holt-Winters, Croston, `ensemble_naive`
 
-**Goal**: Cascade forecasts from stable aggregates (L1: Dept-Month) to granular series (L4: SKU-Store-Day) based on CI pass, drift stability, and anchor validation.
-**Pass If**:
+### **Phase 1c — Feature Registry Stub** *(NEW)*  
+Goal One YAML maps raw → engineered features  
+Pass `features.yaml` committed; all Phase 2+ code imports via keys  
+Benefit Zero hidden renames, instant deprecations  
+Tools `YAML`, `pandas`, `polars` (opt.)
 
-* `baseline_metrics.json` shows `pass_ci: true` for L1
-* L2 inherits drift monitor and passes CI
-* Anchor bias is logged for L3/L4
+### Phase 1b — Aggregation-Aware CI Descent
+**Goal**: Cascade forecasts from L1 (Dept-Month) to L4 (SKU-Store-Day)  
+**Pass If**: CI descent passes with `anchor_bias` logged  
+**Benefit**: Reduced cost, better audit trail
 
-**Reject If**:
+### Phase 2 — Schema + MLflow + PyOD Anomaly Overlay
+**Goal**: Drift diagnostics + governance  
+**Pass If**: Schema validated, MLflow runs, False Positive Rate ≤ 0.05  
+**Tools**: Pandera, MLflow, PyOD
 
-* CI fails at any upstream level
-* Anchor forecast not logged in `error_breakdown.json`
+### **Phase 2c — Back-Test Grid & Hyper-Search** *(NEW)*  
+Goal Grid search core params w/ rolling-origin  
+Pass `grid_metrics.parquet` in MLflow; ΔMAE ≥ 3 % vs baseline  
+Benefit Quantify ROI before fancy models  
+Tools `StatsForecast.grid`, `MLflow`, `joblib`
 
-**Benefit**: Reduces ops cost, ensures audit integrity, stabilizes atomic forecasts.
+### Phase 3 — DVC Reproducibility + Audit Hardening
+**Goal**: Full rollback + SHA tracking  
+**Pass If**: `dvc repro`, `dvc push`, `audit_log.json` written
 
-### 🔹 Phase 2 — Schema + MLflow
+### Phase 4 — Serve & Visual Audit
+**Goal**: Local API + anomaly-flag plots  
+**Pass If**: `docker run` serves, delta audit shows <5% false spikes  
+**Tools**: FastAPI, Docker
 
-**Goal**: Enable early drift detection and experiment tracking
-**Pass If**:
+### Phase 4b — Edge Serve Smoke-Test 
+Goal One-click container demo offline  
+Pass `curl localhost/ping` ⇒ `{"status":"ok"}` < 10 s  
+Benefit No internet? Still demo.  
+Tools `docker-compose`, `FastAPI`, `Makefile`
 
-* `Pandera` schema passes for input structure
-* At least 1 `MLflow` experiment run recorded
-  **Kill If**: > 3 false positives/month
-  **Tools**: `Pandera`, `MLflow`, `configs/`, `src/registry.py`
-  **Benefit**: Metrics lineage + failure tracing + reproducibility
+### Phase 5 — Cloud Burst Training
+**Goal**: Train on EC2 with auto-termination  
+**Pass If**: Training completes, cost < \$25/month  
+**Tools**: AWS CLI, S3, DVC Remote
 
-### 🔹 Phase 3 — DVC Reproducibility
+### Phase 6 — Drift Monitoring
+**Goal**: Auto-refresh + anomaly watch  
+**Pass If**: `refresh.sh` + `drift_monitor.json` updated  
+**Tools**: GitHub Actions, PyOD
 
-**Goal**: Enable full rollback and deterministic pipeline
-**Pass If**:
+### **Phase 6b — Auto-Retrain Trigger** *(NEW)*  
+Goal Cron checks drift; retrain if 14-day MASE > threshold  
+Pass `drift_trigger.log` shows decision · cost logged  
+Benefit No stale model creep  
+Tools GitHub Actions (cron), PyOD, shell
 
-* `dvc repro` regenerates pipeline
-* `dvc push` uploads artefacts
-* Storage ≤ 500MB after 6 months
-  **Kill If**: Large artefacts accumulate or pipelines break during `dvc repro`
-  **Benefit**: Robust versioning + disaster recovery
+### Phase 7 — Feature-Aware Forecasting
+**Goal**: Add LightGBM regressors with PyOD gating  
+**Pass If**: Model beats Holt-Winters on Score  
+**Tools**: LightGBM, MLflow, PyOD
 
-### 🔹 Phase 4 — Serve Anywhere
+### Phase 7b — Driver Attribution Audit
+**Goal**: Quantify impact of anomaly drivers  
+**Pass If**: ≥20% variance explained; error reduced ≥5%  
+**Tools**: SHAP, delta attribution scripts
 
-**Goal**: Run the kernel as a local/offline API
-**Pass If**: `docker run … MODE=serve` returns predictions
-**Tools**: `FastAPI`, `Docker`, `src/serve/`, `Dockerfile`
-**Kill If**: Docker image > 1GB or no local inference
-**Benefit**: Full portability across dev/infra/client systems
+### Phase 8 — Foundation Models
+**Goal**: Benchmark ceiling with pretrained models  
+**Pass If**: Diebold-Mariano p < 0.05  
+**Tools**: TabPFN, TimeGPT
 
-...
+### Phase 9 — SaaS Layer
+**Goal**: Monetize with multi-tenant and explainability  
+**Pass If**: Stripe billing works; per-client anomaly logs  
+**Tools**: Stripe, FastAPI
 
-## 4. Metrics Logic
+### **Phase 9b — FinOps Telemetry** *(NEW)*  
+Goal Cost tags on every cloud job  
+Pass `cost_report.csv` daily; anomalies < 5 %  
+Benefit Budget guard; pricing intel  
+Tools AWS Cost Explorer API, `pandas`, `prefect`
 
-* `MAE`: Absolute error magnitude
-* `Bias`: Signed average error
-* `Score = MAE + |Bias|` → primary KPI across Phases 1, 7, and 8
-* **CI Rule**: `Score <= min(ensemble_naive, holt_winters)`
-* **Anchor Rule**: `anchor_bias = atomic_forecast - aggregate_forecast` → Required for L3/L4 activation and logged in `error_breakdown.json`
 
-...
-
-## 9. Knowledge Layer — Embedded Forecasting Principles
-
-### 📌 Aggregation & Granularity
-
-* Match forecast granularity to decision-making granularity
-* Start at highest-forecastability level (lowest entropy)
-* Cascade downward only after upstream CI pass and anchor registration
-* Forecast Class Mapping:
-
-  * L1/L2 → Holt-Winters, SES
-  * L3/L4 → Croston (SBA/Opt), Intermittent-specific
+### Phase 10 — Enterprise Audit Layer
+**Goal**: Deep forensics + snapshot lineage  
+**Pass If**: LakeFS + Evidently dashboards active  
+**Tools**: LakeFS, Evidently AI
 
 ---
 
-## Appendix: Aggregation Protocol
+## 📏 4. Metrics Logic
 
-See `docs/aggregation_protocol.md` for:
+- `MAE`: Mean Absolute Error (magnitude of error)  
+- `Bias`: Signed average error (direction)  
+- `Score`: Composite KPI defined as `Score = MAE + |Bias|`  
+- `anomaly_flag`: Any residual or input anomaly detected  
+- **CI Rule**: `Score ≤ min(ensemble_naive, holt_winters)`  
+- **Anchor Rule**: `anchor_bias = atomic_forecast − aggregate_forecast` (required for L3/L4 descent)
 
-* CI descent logic
-* Rejection rules
-* Anchor formula
-* Fail-safe thresholds
+**Metric add-ons**  
+| Metric | Use-case | Calc |
+|--------|----------|------|
+| **CRPS** | Full-distribution accuracy | `properscoring.crps_ensemble` |
+| **PICP** | Interval coverage % | hits / total |
+| **ACE** | Avg coverage error vs target | `|PICP − α|` |
+---
 
-Version: `aggregation-v1`
+## 🧠 5. Forecasting Principles
+
+- Descend through aggregation only after CI pass.  
+- PyOD on residuals **and** inputs.  
+- Every forecast error becomes a future feature.
+
+### Aggregation & Granularity
+- Start at high forecastability levels (L1), descend only post-CI pass  
+- L1/L2: Holt-Winters, SES  
+- L3/L4: Croston (SBA/Opt)
+
+### Anomaly Overlay
+- Apply PyOD to both residuals and feature inputs  
+- Used for gating regressors, triggering overrides, and audit diagnostics
+
+---
+
+## 🧘 6. Operating Principles
+
+1. No fluff. Only signal.  
+2. Forecasts are inputs, not commands.  
+3. Institutionalize feedback — each error becomes a feature.
+
+---
+
+## 🧪 7. Quick Build Loop
+
+1. Charter → `/docs/charter.md`  
+2. Audit → `src/utils/data_audit.py`  
+3. EDA → `/notebooks/`  
+4. Model Select → `src/pipelines/model_selection.py`  
+5. Diagnostics → `src/evaluation/residuals.py`  
+6. Deploy → `src/pipelines/production.py`
+7. Unit + Contract Tests → `tests/test_contracts.py` (Pandera) in CI.
+---
+
+## 🔍 8. Model Selection Heuristics
+
+| Data Pattern              | Model                | Why                          |
+|---------------------------|----------------------|-------------------------------|
+| Flat mean, no seasonality | MeanForecast         | Tough to beat                |
+| Random walk               | Naïve                | Efficient markets model      |
+| Stable seasonality        | SeasonalNaive, ETS   | Low tuning cost              |
+| Trend + seasonality       | ETS Add/SARIMA       | Captures joint structure     |
+| Multiple seasonalities    | TBATS / Prophet      | Flexible seasonal windows    |
+| External drivers          | ARIMAX / Dyn Regr.   | Injects causality            |
+
+---
+
+## 📡 9. Communication of Uncertainty
+
+- Always return prediction intervals — never just point forecasts  
+- Show horizon-wise interval widening  
+- For planning, include narrative overlays (e.g. `/docs/scenarios/`)
+
+---
+
+## 🔐 10. Governance Principles
+| Area | Practice |
+|------|----------|
+| Privacy | **PII flag** blocks cloud burst |
+| Overrides | `GoalPressure = Y` ⇒ manager review |
+| Lineage | SHA-256 of training snapshot logged |
+| Data Ops | Version raw + override data |
+| Feedback | Dashboards track accuracy |
+| Detection | Monitor level & variance shifts |
+---
+
+## ⚠️ 11. Pitfalls Checklist
+
+- [ ] Seasonal-Naïve not beaten  
+- [ ] Calendar effects absent  
+- [ ] Residual autocorrelation (Ljung-Box p ≤ 0.05)  
+- [ ] Fat tails unmodeled in residuals  
+
+---
+
+## 🔧 12. Kernel Extensions
+
+| Horizon     | Modules                                      |
+|-------------|----------------------------------------------|
+| 0–6 months  | Real-time anomalies, staffing triggers       |
+| 6m–2 years  | S&OP scenario generators                     |
+| 2y–10 years | Monte-Carlo macro simulators                 |
 
 ---
