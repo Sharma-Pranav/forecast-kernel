@@ -10,7 +10,20 @@ from forecastkernel.utils.logging_utils import setup_logger
 
 
 def run_preflight(input_path: str, report_path: str) -> dict:
-    """Validate raw data using Pandera and optional Great Expectations."""
+    """Run basic validation checks on the raw input data.
+
+    Parameters
+    ----------
+    input_path : str
+        Path to the CSV file containing the time series data.
+    report_path : str
+        Destination path for the JSON validation report.
+
+    Returns
+    -------
+    dict
+        Dictionary summarising validation results and dataset metadata.
+    """
     log = setup_logger(None, "preflight")
     log.info("Loading dataset via duckdb ...")
     con = duckdb.connect()
