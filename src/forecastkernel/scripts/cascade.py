@@ -6,7 +6,17 @@ from forecastkernel.core.aggregation import enforce_cascade_checks
 
 
 def main() -> None:
-    """Validate parent run then launch ``baseline_sf`` with ``--parent_run``."""
+    """Cascade a baseline run using a parent run's outputs.
+
+    This helper validates the upstream run and then launches the
+    :mod:`forecastkernel.scripts.baseline_sf` module with the
+    ``--parent_run`` argument.
+
+    Returns
+    -------
+    None
+        Executed for its side effects of spawning a subprocess.
+    """
     parser = argparse.ArgumentParser(description="Cascade baseline run from parent outputs")
     parser.add_argument("--parent_run", type=str, required=True, help="Path to parent run directory")
     parser.add_argument(
