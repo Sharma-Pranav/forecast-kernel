@@ -1,0 +1,19 @@
+features:
+  ds:
+    description: Timestamp of observation
+    transformation: null
+  unique_id:
+    description: Series identifier
+    transformation: null
+  y:
+    description: Target value
+    transformation: null
+  dow:
+    description: Day of week extracted from ds
+    transformation: "df['ds'].dt.dayofweek"
+  lag_7:
+    description: 7-day lag of target y
+    transformation: "df['y'].shift(7)"
+  rolling_mean_7:
+    description: 7-day rolling mean of target y
+    transformation: "df['y'].rolling(7).mean()"
