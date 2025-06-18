@@ -31,3 +31,10 @@ The following roadmap items remain to be implemented:
 - **Phase 9b – FinOps Telemetry**: track cloud costs for each job.
 - **Phase 10 – Enterprise Audit Layer**: integrate LakeFS and Evidently dashboards for lineage.
 
+## Additional Potential Extensions
+
+- Integration of PyOD for anomaly overlays on both inputs and residuals.
+- Grid search utilities with joblib and StatsForecast.
+- FastAPI application and Docker files for local serving.
+- Cloud training scripts and cost-report tooling.
+
