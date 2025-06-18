@@ -67,6 +67,19 @@ python -m forecastkernel.scripts.baseline_sf \
 
 Results are written to `data/outputs/baseline`.
 
+### 5. Cascade from a parent run
+
+Validate an upstream run and launch the baseline pipeline with its forecasts as the anchor:
+
+```bash
+python -m forecastkernel.scripts.cascade \
+  --parent_run data/outputs/baseline/parent -- \
+  --data data/raw/univariate_example.csv \
+  --horizon 14 --tag child
+```
+
+The resulting `baseline_metrics.json` will include an `anchor_bias` summary.
+
 ## Data versioning with DVC
 
 Data outputs are tracked with [DVC](https://dvc.org/):

@@ -212,16 +212,19 @@ if include_drift_monitor(active_phase):
         raise ValueError("❌ Drift detected. CI gate failed. Retraining required.")
 
 # ------------------------------
+bias_value = None
+if args.parent_run:
+    anchor_forecasts = pd.read_csv(os.path.join(args.parent_run, "baseline_forecasts.csv"))
+    anchor_forecasts["ds"] = pd.to_datetime(anchor_forecasts["ds"])
+    bias_series = compute_anchor_bias(forecasts, anchor_forecasts, selected_model)
+    bias_value = round(float(bias_series.mean()), 4)
+    baseline_metrics["anchor_bias"] = bias_value
+
 if active_phase >= 2:
     log.info("Decomposing residuals for error analysis...")
     error_breakdown = decompose_errors(residuals_df, forecast_cols)
-    if args.parent_run:
-        anchor_forecasts = pd.read_csv(os.path.join(args.parent_run, "baseline_forecasts.csv"))
-        anchor_forecasts["ds"] = pd.to_datetime(anchor_forecasts["ds"])
-        bias_series = compute_anchor_bias(forecasts, anchor_forecasts, selected_model)
-        bias_value = round(float(bias_series.mean()), 4)
+    if bias_value is not None:
         error_breakdown.setdefault(selected_model, {})["Anchor Bias"] = bias_value
-        baseline_metrics["anchor_bias"] = bias_value
     with open(os.path.join(output_path, "error_breakdown.json"), "w") as f:
         json.dump(error_breakdown, f, indent=2)
     log.info("🧠 Error decomposition saved to error_breakdown.json")
