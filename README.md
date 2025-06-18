@@ -12,6 +12,9 @@ lives under `src/forecastkernel`:
 
 Tests reside in `tests/`.
 
+Additional guides live under the [`docs/`](docs) directory, including a
+[CLI reference](docs/cli_reference.md) for all helper scripts.
+
 ## Quickstart
 
 ### 1. Create a Python 3.10 environment
@@ -55,7 +58,17 @@ python -m forecastkernel.scripts.hello
 pytest
 ```
 
-### 4. Run the baseline pipeline
+### 4. Preflight your data
+
+Before training, run a quick schema check:
+
+```bash
+python -m forecastkernel.scripts.data_preflight \
+  --input data/raw/univariate_example.csv \
+  --output preflight_report.json
+```
+
+### 5. Run the baseline pipeline
 
 The main runner consumes a CSV with columns `ds`, `unique_id` and `y`:
 
@@ -67,7 +80,7 @@ python -m forecastkernel.scripts.baseline_sf \
 
 Results are written to `data/outputs/baseline`.
 
-### 5. Cascade from a parent run
+### 6. Cascade from a parent run
 
 Validate an upstream run and launch the baseline pipeline with its forecasts as the anchor:
 
@@ -79,6 +92,16 @@ python -m forecastkernel.scripts.cascade \
 ```
 
 The resulting `baseline_metrics.json` will include an `anchor_bias` summary.
+
+### 7. Validate audit hashes
+
+Run a quick check that saved outputs match the recorded hashes:
+
+```bash
+python -m forecastkernel.scripts.run_ci_check \
+  --audit_log data/outputs/baseline/demo/audit_log.json \
+  --base_dir data/outputs/baseline/demo
+```
 
 ## Data versioning with DVC
 
