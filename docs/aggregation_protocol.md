@@ -4,6 +4,14 @@
 
 Enable CI-passable, cost-efficient forecasts by beginning at high-signal aggregate levels (L1), cascading to atomic granularity (L4) only after structure stabilizes and drift is controlled.
 
+Use the `cascade.py` helper to enforce these checks and launch a child run:
+
+```bash
+python -m forecastkernel.scripts.cascade \
+  --parent_run path/to/parent_run -- \
+  --data path/to/new.csv --horizon 14
+```
+
 ---
 
 ## Aggregation Levels (Examples)
