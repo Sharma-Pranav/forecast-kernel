@@ -1,100 +1,97 @@
 # Forecast Kernel
 
-This repository contains a small forecasting toolkit used for testing continuous integration pipelines. The `src` directory is organised into logical subpackages:
+Forecast Kernel is a lightweight sandbox for forecasting experiments. It ships
+baseline models, evaluation helpers and simple command line utilities. The code
+lives under `src/forecastkernel`:
 
-- **core** – statistical helpers and algorithms such as evaluation utilities, drift detection and error decomposition.
-- **utils** – general helpers for hashing, logging and git integration.
-- **pipelines** – plotting helpers for diagnostics.
-- **models** – placeholder package for forecast model definitions.
+- `core` – evaluation metrics, drift detection and error decomposition
+- `utils` – hashing, logging and git helpers
+- `pipelines` – diagnostic plotting utilities
+- `models` – placeholder model definitions
+- `scripts` – runnable utilities for baseline forecasts and CI checks
 
-Scripts under `scripts/` provide command line entry points for running baseline forecasts, validating hashes and visualising forecast deltas. Tests live in `tests/` and exercise the CI routines.
+Tests reside in `tests/`.
 
-The project follows a lightweight structure to keep components modular and easy to reuse across experiments.
+## Quickstart
 
+### 1. Create a Python 3.10 environment
 
-Activate environment in ubuntu/macos: source .venv/bin/activate
-Activate environment in windows (CMD): .venv\Scripts\activate.bat
-Activate environment in windows (Powershell): .venv\Scripts\Activate.ps1
+Using `pip`:
 
-
-# Only once:
-C:\Users\topra\AppData\Local\Programs\Python\Python310\python.exe -m venv .venv
-
-# Install dependencies=
-# Install Python 3.10 or higher
-
-# if multiple dependiceies exist : 
-
-# Only once:
-C:\Users\topra\AppData\Local\Programs\Python\Python310\python.exe -m venv .venv
-# Install uv if not present
-iwr https://astro.build/install.ps1 -useb | iex
-uv venv --python=3.10 .venv
-python -m pip install --upgrade pip 
-uv pip compile requirements.in -o requirements.txt
-uv pip install -r requirements.txt
-# Or
+```bash
+python -m venv .venv
+source .venv/bin/activate         # Unix/macOS
+.venv\Scripts\Activate.ps1         # Windows
 pip install -r requirements.txt
 pip install -e .
-$env:PYTHONPATH="."; pytest tests/test_schema.py
+```
 
-# Only once : 
-# 1. Create venv using Python 3.10
-C:\Users\topra\AppData\Local\Programs\Python\Python310\python.exe -m venv .venv
+Using [`uv`](https://github.com/astral-sh/uv) for faster installs:
 
-# 2. Activate
-.venv\Scripts\Activate.ps1
-
-# 3. Install dependencies via UV
+```bash
+pip install uv                     # if uv is not installed
+uv venv --python=3.10 .venv
+source .venv/bin/activate          # or .venv\Scripts\Activate.ps1 on Windows
 uv pip install -r requirements.txt
-
-# 4. Editable install via pip (NOT uv)
+uv pip compile requirements.in -o requirements.txt  # update lock file
 pip install -e .
+```
 
-# Each time you want to start work 
-# 1. Activate venv
-.venv\Scripts\Activate.ps1
+### 2. Activate for development
 
-# 2. (Optional) Pull latest packages
-uv pip install -r requirements.txt
+When you start a new shell session, reactivate the environment:
 
-# 3. Re-confirm editable link (if structure changed)
-pip install -e .
+```bash
+source .venv/bin/activate          # Unix/macOS
+.venv\Scripts\Activate.ps1          # Windows
+```
 
+### 3. Verify the installation
 
+Run a quick hello script and the test suite:
 
-# Run MLflow UI 
+```bash
+python -m forecastkernel.scripts.hello
+pytest
+```
 
-mlflow ui --backend-store-uri file:./.mlflow_logs
+### 4. Run the baseline pipeline
 
-# DVC (Data Version Control)
-dvc init
+The main runner consumes a CSV with columns `ds`, `unique_id` and `y`:
+
+```bash
+python -m forecastkernel.scripts.baseline_sf \
+  --data data/raw/univariate_example.csv \
+  --horizon 14 --tag demo
+```
+
+Results are written to `data/outputs/baseline`.
+
+## Data versioning with DVC
+
+Data outputs are tracked with [DVC](https://dvc.org/):
+
+```bash
 dvc add data/outputs/baseline
-dvc stage add -n forecast -d data/raw/univariate_example.csv -d src/forecastkernel/scripts/baseline_sf.py -o data/outputs/baseline/baseline_metrics.json -o data/outputs/baseline/baseline_forecasts.csv -o data/outputs/baseline/run_info.json -o data/outputs/baseline/audit_log.json --always-changed python src/forecastkernel/scripts/baseline_sf.py --data data/raw/univariate_example.csv
->> dvc stage add -n forecast \
->>     -d data/raw/univariate_example.csv \
->>     -d src/forecastkernel/scripts/baseline_sf.py \
->>     -o data/outputs/baseline/baseline_metrics.json \
->>     -o data/outputs/baseline/baseline_forecasts.csv \
->>     -o data/outputs/baseline/run_info.json \
->>     -o data/outputs/baseline/audit_log.json \
->>     --always-changed \
->>     python src/forecastkernel/scripts/baseline_sf.py --data data/raw/univariate_example.csv
->>
-
-
-# Added a local DVC remote to store outputs
-dvc remote add -d localstore data/.dvcstore
 dvc push
+```
 
+To use an S3 remote:
 
-
-# When Ready for S3:
-#Add S3 remote:
+```bash
 dvc remote add s3remote s3://your-bucket-name
-#Change default remote:
-
 dvc remote default s3remote
-#Push again:
-
 dvc push
+```
+
+## MLflow UI
+
+Start the experiment tracker locally with:
+
+```bash
+mlflow ui --backend-store-uri file:./.mlflow_logs
+```
+
+---
+
+This project is intended for experimentation and CI testing only.
