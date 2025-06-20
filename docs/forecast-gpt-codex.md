@@ -227,3 +227,8 @@ Design a sovereign, scalable, and cost ‒ conscious forecasting system that
 | 2–10 y  | Monte-Carlo macro simulators              |
 
 ---
+## 🛡️ 13. Escalation & Override Flow
+
+- If anomaly overlay triggers (residual > 3σ or FVC < 0.35), auto-flag for human review.
+- All overrides logged, versioned, and feedback recycled for retraining.
+- If Score > baseline for 2 consecutive cycles, auto-fallback to Naïve, trigger alert, and require RCA.
