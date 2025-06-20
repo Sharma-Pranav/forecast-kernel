@@ -1,4 +1,4 @@
-# 📦 Forecast-Kernel Bootstrap — Full Phase 1–4 Execution
+# 📦 Forecast-Kernel Bootstrap — Phases 0–4 Verified
 
 # 1️⃣ Activate or Create Virtual Environment
 if (-not (Test-Path ".venv")) {
@@ -20,24 +20,44 @@ pip install -e .
 git config --global user.name "Pranav Sharma"
 git config --global user.email "pranavsharma619@gmail.com"
 
-# 4️⃣ Run Baseline Phase 1 Script
+# 4️⃣ Run Data Preflight (Phase 0a)
+python -m forecastkernel.scripts.data_preflight `
+  --input data/raw/univariate_example.csv `
+  --output preflight_report.json
+
+# 5️⃣ Run Baseline Phase 1 Script
 python -m forecastkernel.scripts.baseline_sf `
   --data data/raw/univariate_example.csv `
   --horizon 14 `
   --tag demo `
   --phase 1
 
-# 5️⃣ Run CI Runtime Tests
+# 6️⃣ Cascade from Baseline (Phase 1b)
+python -m forecastkernel.scripts.cascade `
+  --parent_run data/outputs/baseline/demo -- `
+  --data data/raw/univariate_example.csv `
+  --horizon 14 --tag cascaded
+
+# 7️⃣ Validate Feature Registry (Phase 1c)
+python - <<EOF
+from forecastkernel.utils.feature_registry import load_features
+print(load_features().get("features", {}).keys())
+EOF
+
+# 8️⃣ Drift & Error Decomposition Tests (Phase 2)
+pytest tests/test_drift_decomposition_dm.py -q
+
+# 9️⃣ Run CI Runtime Tests
 python -m forecastkernel.tests.test_ci_runtime `
   --run_dir data/outputs/baseline/demo `
   --data data/raw/univariate_example.csv
 
-# 6️⃣ Run Audit Hash Check
+# 🔟 Run Audit Hash Check
 python -m forecastkernel.utils.ci_utils `
   --audit_log data/outputs/baseline/demo/audit_log.json `
   --output_dir data/outputs/baseline/demo
 
-# 7️⃣ Generate Visual Delta Audit
+# 1️⃣1️⃣ Generate Visual Delta Audit
 python -m forecastkernel.scripts.visual_delta_audit `
   --output_path data/outputs/baseline/demo
 
