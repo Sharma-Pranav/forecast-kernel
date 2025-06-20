@@ -17,17 +17,18 @@ This document tracks project phases from the codex and their current status.
 
 The following roadmap items remain to be implemented:
 
-- **Phase 2 – Anomaly Overlay with PyOD**: integrate PyOD models and log anomaly flags in MLflow.
-- **Phase 2c – Back‑Test Grid & Hyper‑Search**: grid search baseline parameters, store results in MLflow.
-- **Phase 4 – Serve & Visual Audit**: expose forecasts through a FastAPI service and containerize with Docker.
+- **Phase 2 – Anomaly Overlay with PyOD**: integrate PyOD models and log anomaly flags in MLflow. `[Standalone]`
+- **Phase 2b – Decision‑Kernel Microservices**: expose `/recommend_qty` and `/voi` endpoints using PFOD formulas. `[Standalone]`
+- **Phase 2c – Back‑Test Grid & Hyper‑Search**: grid search baseline parameters, store results in MLflow. `[Standalone]`
+- **Phase 4 – Serve & Visual Audit**: expose forecasts through a FastAPI service and containerize with Docker. `[Standalone]`
 - **Phase 4b – Edge Serve Smoke‑Test**: offline container demo using `docker-compose`.
-- **Phase 5 – Cloud Burst Training**: run training jobs on EC2 with DVC remote storage.
-- **Phase 6 – Drift Monitoring**: scheduled drift checks and automatic anomaly logging.
+- **Phase 5 – Cloud Burst Training**: run training jobs on EC2 with DVC remote storage. `[Standalone]`
+- **Phase 6 – Drift Monitoring**: scheduled drift checks and automatic anomaly logging. `[Standalone]`
 - **Phase 6b – Auto‑Retrain Trigger**: cron‑based retraining if drift thresholds are exceeded.
 - **Phase 7 – Feature‑Aware Forecasting**: add LightGBM regressors gated by PyOD.
 - **Phase 7b – Driver Attribution Audit**: explain anomalies via SHAP and attribution plots.
-- **Phase 8 – Foundation Models**: benchmark large pre‑trained models such as TabPFN or TimeGPT.
+- **Phase 8 – Foundation Models**: benchmark large pre‑trained models such as TabPFN or TimeGPT. `[Standalone]`
 - **Phase 9 – SaaS Layer**: multi‑tenant serving with billing via Stripe.
 - **Phase 9b – FinOps Telemetry**: track cloud costs for each job.
-- **Phase 10 – Enterprise Audit Layer**: integrate LakeFS and Evidently dashboards for lineage.
+- **Phase 10 – Enterprise Audit Layer**: integrate LakeFS and Evidently dashboards for lineage. `[Standalone]`
 
