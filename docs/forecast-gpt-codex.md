@@ -49,6 +49,16 @@ Design a sovereign, scalable, and cost ‒ conscious forecasting system that
 
 ---
 
+## 🧮 Decision Value Metrics in Ops
+
+- Calculate and track **Decision Value Added (DVA)** for all major actions:  
+  `% reduction in cost/stockouts/emissions due to forecast-driven actions.`
+
+- Track and require **Forecast Value Coefficient (FVC)**:  
+  `FVC = (Cost without model – Cost with model) / Cost without model`  
+  **Deploy only if FVC ≥ 0.35.**
+
+
 ## 🔢 4b. Decision ‒ Kernel Integration *(PFOD)*
 
 > Source chapters: 7.1–7.4, 12.1–12.4, 13.1–13.4 from *Probabilistic Forecasts & Optimal Decisions* (Krzysztofowicz, 2024)
