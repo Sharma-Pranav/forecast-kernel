@@ -193,6 +193,30 @@ Design a sovereign, scalable, and cost ‒ conscious forecasting system that
 * VOI\_€ < 15% of baseline ordering cost
 
 ---
+## ⛓️ Constraint & Feedback Compass
+
+**Quarterly System Constraint Map**
+- Explicitly map Data → Forecast → Decision → Execution → Feedback.
+- Quantify friction, delay, and value loss at each node.
+- **Rule:** Kill any initiative optimizing a non-bottleneck.
+
+**Real-Time Compounding Feedback**
+- All overrides, errors, and planner interventions are *automatically* logged and recycled as features, test cases, or new protocols.
+- Any override pattern seen >2× triggers a protocol/code patch (not just documentation).
+
+**Embedded Network Effects**
+- Track number and depth of external API integrations (suppliers, customers, partner systems).
+- Make “# of systems that cannot operate without kernel API” a core health metric.
+- Design for network participation growth (measured quarterly).
+
+**Anti-Blind Spot Table (Quarterly Review)**
+| Blind Spot          | Scan                    | Correction                         |
+|---------------------|-------------------------|------------------------------------|
+| Model as constraint | Is it *really*?         | System map check                   |
+| Feedback recycling  | Enforced in code?       | Pipeline/test, not checklist       |
+| Network effect      | Embedded APIs?          | KPI, growth target                 |
+| Regret/latency      | In Grafana?             | Wire to dashboard or kill          |
+
 
 ## 🔧 12. Kernel Extensions
 
