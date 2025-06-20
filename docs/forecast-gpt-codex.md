@@ -1,4 +1,4 @@
-# 🛭 FORECAST ‒ GPT CODEX — Forecast ‒ Kernel v∞ (PyOD Extended Variant)
+# 🛭 FORECAST ‒ GPT CODEX — Forecast ‒ Kernel v∞ - Decision Velocity × Decision Quality
 
 **Author**: Pranav Sharma
 **Variant**: Anomaly Overlay Logic
